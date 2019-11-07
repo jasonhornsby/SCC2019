@@ -1,0 +1,12 @@
+{
+  "type": "sqlite",
+  "synchronize": true,
+  "logging": true,
+  "logger": "simple-console",
+  "database": "db/database.sqlite",
+  "entities": [
+    "src/entities/**/*.ts"
+  ]
+}
+
+
