@@ -7,10 +7,10 @@ import { Connection, createConnection } from 'typeorm';
 import { LoginController, RegisterController, UserController } from './controllers';
 import { Logger } from '@overnightjs/logger';
 
-export class AuthServer extends Server {
+export class UserManagerServer extends Server {
 
     public static async start(port: number) {
-        const s = new AuthServer();
+        const s = new UserManagerServer();
         await s.setup();
         s.app.listen(port, () => {
             Logger.Info(`Server listening on port: ${port}`);
@@ -42,4 +42,4 @@ export class AuthServer extends Server {
 
 }
 
-const server = AuthServer.start(8000);
+const server = UserManagerServer.start(8000);
