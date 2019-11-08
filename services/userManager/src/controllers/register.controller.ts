@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { Connection } from 'typeorm';
 import { User } from '../entities/user';
 import { jwtManager } from '../util/jwtManager.util';
+import { hash } from 'bcrypt';
 
 @Controller('register/')
 export class RegisterController {
@@ -27,7 +28,7 @@ export class RegisterController {
 
         const newUser = new User();
         newUser.username = req.body.username;
-        newUser.password = req.body.password;
+        newUser.password = await hash(req.body.password, 10);
         await userRepo.save(newUser);
 
         const jwtToken = await jwtManager.jwt({

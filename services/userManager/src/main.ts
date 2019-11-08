@@ -1,5 +1,6 @@
 import { Server } from "@overnightjs/core";
 import * as bodyParser from 'body-parser';
+import cors from 'cors';
 // Reflect metadata needed for TypeORM
 import "reflect-metadata";
 import { Connection, createConnection } from 'typeorm';
@@ -25,6 +26,7 @@ export class UserManagerServer extends Server {
 
         this.app.use(bodyParser.json());
         this.app.use(bodyParser.urlencoded({extended: true}));
+        this.app.use(cors());
     }
 
     private async setup() {

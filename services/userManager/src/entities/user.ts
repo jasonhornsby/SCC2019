@@ -1,5 +1,5 @@
-import { BaseEntity, BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { hash, compare } from 'bcrypt';
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { compare } from 'bcrypt';
 
 @Entity()
 export class User extends BaseEntity {
@@ -12,12 +12,6 @@ export class User extends BaseEntity {
 
     @Column({ select: false })
     public password: string;
-
-    @BeforeInsert()
-    public async beforeInsert() {
-        const saltRounds = 10;
-        this.password = await hash(this.password, saltRounds);
-    }
 
     public async checkPassword(password: string): Promise<boolean> {
         return await compare(password, this.password);
