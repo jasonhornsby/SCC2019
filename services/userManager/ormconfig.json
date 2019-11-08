@@ -5,7 +5,7 @@
   "logger": "simple-console",
   "database": "db/database.sqlite",
   "entities": [
-    "src/entities/**/*.ts"
+    "dist/entities/*.js"
   ]
 }
 
