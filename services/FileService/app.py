@@ -3,6 +3,7 @@ from datetime import datetime, date
 
 from flask import Flask, request, Response, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flasgger import Swagger
 
 # Create the Flask application and the Flask-SQLAlchemy object.
 app = Flask(__name__)
@@ -10,6 +11,7 @@ app.config['DEBUG'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
 
 db = SQLAlchemy(app)
+swagger = Swagger(app)
 
 
 class FileEncoder(json.JSONEncoder):
@@ -54,6 +56,29 @@ def hello_world():
 
 @app.route("/files", methods=["GET"])
 def get_files():
+    """
+    Get all files.
+    ---
+    responses:
+        200:
+          description: Successfully read files
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                size:
+                  type: integer
+                upload_date:
+                  type: string
+                id:
+                  type: integer
+                user:
+                  type: string
+
+    """
     # get files from db
     db_response = File1.query.all()
     js = json.dumps(db_response, cls=FileEncoder)
