@@ -70,4 +70,5 @@ dist
 venv
 
 # python cache
-__pycache_
+services/FileService/__pycache__/
+
