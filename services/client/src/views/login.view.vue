@@ -1,17 +1,28 @@
 <template>
-    <div class="login">
-        <h1>Login to site</h1>
-        <span v-for="(error, index) in errors" v-bind:key="index">{{ error }}</span>
-        <form
-            @submit="checkForm"
-        >
-            <label for="username">Username:</label>
-            <input type="text" id="username" v-model="username"/>
+    <div class="auth-wrapper">
+        <p v-for="(error, index) in errors" v-bind:key="index" class="text-red-500 text-xs italic">{{ error }}</p>
+        <form @submit="checkForm">
+            <div class="form-element">
+                <div class="label">
+                    <label for="username">Username</label>
+                </div>
+                <div class="input">
+                    <input type="text" id="username" v-model="username"/>
+                </div>
+            </div>
 
-            <label for="password">Password:</label>
-            <input type="password" id="password" v-model="password"/>
-
-            <button type="submit">Login</button>
+            <div class="form-element">
+                <div class="label">
+                    <label for="password">Password</label>
+                </div>
+                <div class="input">
+                    <input type="password" id="password" v-model="password"/>
+                </div>
+            </div>
+            <div class="form-element">
+                <div class="label"></div>
+                <button class="btn input" type="submit"> Login </button>
+            </div>
         </form>
     </div>
 </template>
@@ -27,6 +38,10 @@
         public errors: string[] = [];
         public username: string = "";
         public password: string = "";
+
+        mounted() {
+            this.$store.commit('changeTitle', 'Login');
+        }
 
         public checkForm($event: any) {
             // Reset errors
