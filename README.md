@@ -7,7 +7,7 @@
 #### Setup
 **For development:**
 Requires nodejs and npm: https://nodejs.org/en/
-1. `npm init`
+1. `npm install`
 2. `npm run dev`
 
 **For production:**
