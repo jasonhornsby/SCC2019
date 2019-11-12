@@ -11,6 +11,7 @@ app.config['DEBUG'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
 
 db = SQLAlchemy(app)
+"""Dokumentation & Testanfragen zu finden unter /apidocs/"""
 swagger = Swagger(app)
 
 
@@ -61,7 +62,6 @@ def get_files():
     ---
     responses:
         200:
-          description: Successfully read files
           schema:
             type: array
             items:
@@ -87,6 +87,42 @@ def get_files():
 
 @app.route("/files", methods=["POST"])
 def add_file():
+    """
+    Add a new file
+    ---
+    operationId: add_file
+    tags:
+      - files
+    parameters:
+      - name: file_info
+        in: body
+        description: File to create
+        required: true
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            size:
+              type: integer
+            user:
+              type: string
+    responses:
+      202:
+        description: Successfully created file
+        schema:
+          properties:
+            name:
+              type: string
+            size:
+              type: integer
+            upload_date:
+              type: string
+            id:
+              type: integer
+            user:
+              type: string
+     """
     if isinstance(request.json, str):
         file_info = json.loads(request.json)
     else:
@@ -100,6 +136,20 @@ def add_file():
 
 @app.route("/files/<id>", methods=["DELETE"])
 def delete_file(id):
+    """
+    Delete a File by its id
+    ---
+    parameters:
+      - name: id
+        in: path
+        type: integer
+        required: True
+    responses:
+      200:
+        description: Successfully deleted a file from db
+      404:
+        description: Not Found
+    """
     file = File1.query.get(id)
     if file:
         db.session.delete(file)
@@ -115,6 +165,34 @@ def delete_file(id):
 
 @app.route("/files/<id>", methods=["GET"])
 def get_single_file(id):
+    """
+    Get one specific file by its id.
+    ---
+    parameters:
+      - name: id
+        in: path
+        description: Id of the file
+        type: integer
+        required: True
+    responses:
+      200:
+        description: Successfully found and delievered file
+        schema:
+          properties:
+            name:
+              type: string
+            size:
+              type: integer
+            upload_date:
+              type: "string"
+              format: "date-time"
+            id:
+              type: integer
+            user:
+              type: string
+      404:
+          description: Not Found
+    """
     file = File1.query.get(id)
     if file:
         js = json.dumps(file, cls=FileEncoder)
