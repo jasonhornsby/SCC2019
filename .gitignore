@@ -65,3 +65,10 @@ typings/
 
 # Dist folders
 dist
+
+# python env 
+venv
+
+# python cache
+services/FileService/__pycache__/
+

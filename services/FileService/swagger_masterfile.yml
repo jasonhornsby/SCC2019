@@ -1,0 +1,135 @@
+swagger: "2.0"
+info:
+  description: "File Server."
+  version: "1.0.0"
+  title:  "File Server."
+basePath: /
+tags:
+- name: "files"
+  description: "All functionalities about file storage"
+schemes:
+- "https"
+- "http"
+consumes:
+  - application/json
+produces:
+  - application/json
+
+
+
+# Paths supported by the server application
+paths:
+  /files:
+    get:
+      operationId: get_files
+      tags:
+        - files
+      summary: Read the entire list of files
+      description: Access to all files
+      responses:
+        200:
+          description: Successfully got file list
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                size:
+                  type: integer
+                upload_date:
+                  type: string
+                id:
+                  type: integer
+                user:
+                  type: string
+
+
+    post:
+      operationId: add_file
+      tags:
+        - files
+      summary: Add a new file
+      description: Add a new file
+      parameters:
+        - name: file_info
+          in: body
+          description: File to create
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              size:
+                type: integer
+              user:
+                type: string
+
+      responses:
+        202:
+          description: Successfully created file
+          schema:
+            properties:
+              name:
+                type: string
+              size:
+                type: integer
+              upload_date:
+                type: string
+              id:
+                type: integer
+              user:
+                type: string
+
+  /files/{id}:
+    get:
+      operationId: get_single_file
+      tags:
+        - Files
+      summary: Get a specific file
+      description: Get one specific file by its id
+      parameters:
+        - name: id
+          in: path
+          description: Id of the file
+          type: integer
+          required: True
+      responses:
+        200:
+          description: Successfully found and delievered file
+          schema:
+            properties:
+              name:
+                type: string
+              size:
+                type: integer
+              upload_date:
+                type: "string"
+                format: "date-time"
+              id:
+                type: integer
+              user:
+                type: string
+        404:
+          description: "Not Found: http://.../{id}"
+
+
+    delete:
+      operationId: delete_file
+      tags:
+        - Files
+      summary: Delete a File
+      description: Delete a File by its id
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          required: True
+      responses:
+        200:
+          description: Successfully deleted a file from db
+        404:
+          description: "Not Found: http://.../{id}"
+
