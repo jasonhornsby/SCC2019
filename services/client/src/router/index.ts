@@ -13,7 +13,7 @@ const routes = [
     name: 'home',
     component: HomeView,
     meta: {
-      requiresAuth: false
+      requiresAuth: true
     }
   },
   {
@@ -41,15 +41,26 @@ const router = new VueRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  if(to.matched.some(record => record.meta.requiresAuth)) {
-    if (store.getters.isLoggedIn) {
-      next();
-      return
+  // make sure you can only access the login and register screen when you arent logged in
+  if (to.name === 'login' || to.name === 'register') {
+    const loggedIn = localStorage.getItem('user');
+    if (loggedIn) {
+      next('');
+      return;
     }
-    next('/login')
-  } else {
-    next()
   }
+
+  // Check if the current route need Authentication
+  if ( to.matched.some(record => record.meta.requiresAuth) ) {
+    const loggedIn = localStorage.getItem('user');
+    if (!loggedIn) {
+      next('/login');
+      return;
+    }
+  }
+
+  // else proceed as normal
+  next();
 });
 
 export default router;

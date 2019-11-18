@@ -1,19 +1,21 @@
 <template>
     <div class="files-wrapper">
         <aside class="file-upload">
-            <button class="btn">Upload new File</button>
+            <button class="btn btn-dark">Upload new File</button>
         </aside>
+
         <main class="files-list">
-            <div class="file"
-                 v-for="file in files"
-                 v-bind:key="file.id"
-                 @click="selectFile(file.id)"
-                 :class="{'selected' : selectedFile && selectedFile.id === file.id}"
-            >
-                <span class="name">{{ file.name }}</span>
-                <span>{{ file.uploaded }}</span>
-                <span class="size">{{ file.size }}</span>
-            </div>
+            <ul class="list-group">
+                <li class="list-group-item"
+                    v-for="file in files"
+                    v-bind:key="file.id"
+                    @click="selectFile(file.id)"
+                    :class="{'active' : selectedFile && selectedFile.id === file.id}"
+                >
+                    {{ file.name }}
+                    <span class="badge badge-primary badge-pill">{{ file.size }}</span>
+                </li>
+            </ul>
         </main>
 
         <aside class="files-description" v-if="selectedFile">

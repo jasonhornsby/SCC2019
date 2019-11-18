@@ -1,29 +1,15 @@
 <template>
     <div class="auth-wrapper">
         <form @submit="checkForm">
-            <div class="form-element">
-                <div class="label">
-                    <label for="username">Username</label>
-                </div>
-                <div class="input">
-                    <input type="text" id="username" v-model="username"/>
-                    <span v-if="errors.username">{{ errors.username }}</span>
-                </div>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" v-model="username" class="form-control"/>
             </div>
-            <div class="form-element">
-                <div class="label">
-                    <label for="password">Password</label>
-                    <span v-if="errors.password">{{ errors.password }}</span>
-                </div>
-                <div class="input">
-                    <input type="password" id="password" v-model="password"/>
-                </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" v-model="password" class="form-control"/>
             </div>
-            <div class="form-element">
-                <div class="label"></div>
-                <span v-if="errors.server">{{ errors.server }}</span>
-                <button type="submit" class="btn input">Register</button>
-            </div>
+            <button type="submit" class="btn btn-block btn-dark">Register</button>
         </form>
     </div>
 </template>
@@ -46,27 +32,9 @@
 
 
         public checkForm($event: any) {
-            // Reset errors
-            this.errors = {
-                'username': null,
-                'password': null,
-                'server': null
-            };
 
             if (this.password && this.password) {
-                this.axios.post('http://localhost:8000/register', {
-                    username: this.username,
-                    password: this.password
-                }).then(res => {
-                    this.$store.dispatch('doLogin', res.data);
-                    return;
-                }).catch((error) => {
-                    console.log(error.response.status);
-                    if (error.response.status === 401 || error.response.status === 409) {
-                        this.errors.server = error.response.data.message;
-                    }
-                    return;
-                })
+                this.$store.dispatch('register', { username: this.username, password: this.password });
             }
 
             if (!this.username) {

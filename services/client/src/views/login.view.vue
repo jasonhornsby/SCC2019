@@ -1,41 +1,31 @@
 <template>
     <div class="auth-wrapper">
-        <p v-for="(error, index) in errors" v-bind:key="index" class="text-red-500 text-xs italic">{{ error }}</p>
         <form @submit="checkForm">
-            <div class="form-element">
-                <div class="label">
-                    <label for="username">Username</label>
-                </div>
-                <div class="input">
-                    <input type="text" id="username" v-model="username"/>
-                </div>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" v-model="username" class="form-control"/>
             </div>
 
-            <div class="form-element">
-                <div class="label">
-                    <label for="password">Password</label>
-                </div>
-                <div class="input">
-                    <input type="password" id="password" v-model="password"/>
-                </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" v-model="password" class="form-control"/>
             </div>
-            <div class="form-element">
-                <div class="label"></div>
-                <button class="btn input" type="submit"> Login </button>
-            </div>
+
+            <button class="btn btn-block btn-dark" type="submit"> Login </button>
         </form>
     </div>
 </template>
 <script lang="ts">
     import Vue from 'vue';
     import Component from 'vue-class-component';
+    import { userService } from '@/services/user.service';
 
     @Component({
         name: 'LoginVue'
     })
     export default class LoginVue extends Vue {
 
-        public errors: string[] = [];
+        public errors: any = {};
         public username: string = "";
         public password: string = "";
 
@@ -48,26 +38,15 @@
             this.errors = [];
 
             if (this.password && this.password) {
-                this.axios.post('http://localhost:8000/login', {
-                    username: this.username,
-                    password: this.password
-                }).then(res => {
-                    this.$store.dispatch('doLogin', res.data);
-                    return;
-                }).catch((error) => {
-                    if (error.response.status === 401) {
-                        this.errors.push(error.response.data.message);
-                    }
-                    return;
-                })
+                this.$store.dispatch('login', { username: this.username, password: this.password })
             }
 
             if (!this.username) {
-                this.errors.push('Please enter a username');
+                this.errors.username = 'Please enter a username';
             }
 
             if (!this.password) {
-                this.errors.push('Please enter your password');
+                this.errors.password = 'Please enter your password';
             }
 
             $event.preventDefault();

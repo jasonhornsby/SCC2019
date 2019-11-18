@@ -1,14 +1,15 @@
 <template>
-    <nav>
-        <router-link to="/" class="brand">SCC</router-link>
+    <nav class="navbar navbar-light">
+        <router-link to="/" class="navbar-brand">SCC</router-link>
 
         <div class="title">
             {{ title }}
         </div>
 
         <div class="login">
-            <router-link to="/login" class="btn">Login</router-link>
-            <router-link to="/register" class="btn">Register</router-link>
+            <button class="btn btn-dark" @click="logout()" v-if="isLoggedIn">Logout</button>
+            <router-link to="/login" class="btn btn-dark" v-if="!isLoggedIn">Login</router-link>
+            <router-link to="/register" class="btn btn-outline-dark" v-if="!isLoggedIn">Register</router-link>
         </div>
     </nav>
 </template>
@@ -23,31 +24,20 @@
         get title() {
             return this.$store.getters.getTitle;
         }
+
+        get isLoggedIn() {
+            return this.$store.getters.isLoggedIn;
+        }
+
+        logout() {
+            this.$store.dispatch('doLogout');
+        }
     }
 </script>
 <style lang="scss">
-    nav {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        margin-bottom: 20px;
-        align-items: center;
-
-        .brand {
-            font-size: 1.3rem;
-            text-decoration: none;
-            color: inherit;
-            font-weight: 600;
-            flex: 1;
-        }
-
-        .login {
-            flex: 1;
-            display: flex;
-            flex-direction: row-reverse;
-            &>* {
-                margin-left: 10px;
-            }
+    .login {
+        .btn {
+            margin-left: 10px;
         }
     }
 </style>

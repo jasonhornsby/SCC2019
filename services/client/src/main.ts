@@ -7,15 +7,12 @@ import VueAxios from 'vue-axios'
 
 Vue.config.productionTip = true;
 
-Vue.use(VueAxios, axios);
-
-/**
- * Check if the browser already has a token available
- */
 const token = localStorage.getItem('token');
 if (token) {
-  Vue.axios.defaults.headers.common['Authorization'] = token;
+  axios.defaults.headers.common['Authentication'] = token;
 }
+
+Vue.use(VueAxios, axios);
 
 import Component from 'vue-class-component'
 
