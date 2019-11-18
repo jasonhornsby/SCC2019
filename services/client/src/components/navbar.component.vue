@@ -35,10 +35,15 @@
     }
 </script>
 <style lang="scss">
+    .navbar-brand, .login {
+        flex: 1;
+    }
     .navbar-brand {
         font-weight: bolder;
     }
     .login {
+        display: flex;
+        flex-direction: row-reverse;
         .btn {
             margin-left: 10px;
         }
