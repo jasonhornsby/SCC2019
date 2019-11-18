@@ -1,5 +1,5 @@
 <template>
-    <nav class="navbar navbar-light">
+    <nav class="navbar navbar-light mb-3">
         <router-link to="/" class="navbar-brand">SCC</router-link>
 
         <div class="title">
@@ -35,6 +35,9 @@
     }
 </script>
 <style lang="scss">
+    .navbar-brand {
+        font-weight: bolder;
+    }
     .login {
         .btn {
             margin-left: 10px;

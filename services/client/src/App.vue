@@ -1,5 +1,6 @@
 <template>
   <div class="app-wrapper">
+    <notification></notification>
     <div class="app">
       <navbar></navbar>
       <router-view/>
@@ -11,8 +12,10 @@
   import Vue from "vue";
   import Component from 'vue-class-component';
   import Navbar from '@/components/navbar.component.vue';
+  import Notification from '@/components/notification.component';
+
   @Component({
-    components: {Navbar}
+    components: {Navbar, Notification}
   })
   export default class App extends Vue {
   }

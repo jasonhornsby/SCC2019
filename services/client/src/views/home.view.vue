@@ -18,8 +18,10 @@
             </ul>
         </main>
 
-        <aside class="files-description" v-if="selectedFile">
-            <h1>{{ selectedFile.name }}</h1>
+        <aside class="card" v-if="selectedFile">
+            <div class="card-header">
+                {{ selectedFile.name }}
+            </div>
         </aside>
     </div>
 </template>
@@ -77,41 +79,11 @@
     .files-wrapper {
         display: flex;
         flex-direction: row;
-        &>* {
-            padding: 0px 5px;
-            &:first-child {
-                padding-left: 0;
-            }
-            &:last-child {
-                padding-right: 0;
-            }
-        }
+
         .files-list {
             flex: 1;
-
-            .file {
-                display: flex;
-                background-color: white;
-                padding: 10px 10px;
-                align-items: center;
-                margin-bottom: 5px;
-                cursor: pointer;
-                box-shadow: 0 6px 8px rgba(102,119,136,.03), 0 1px 2px rgba(102,119,136,.3);
-
-                &.selected {
-                    background: linear-gradient(15deg,#678,#6f8793);
-                    color: white;
-                }
-
-                .name {
-                    flex: 1;
-                    font-size: 1.1rem;
-                }
-                .size {
-                    flex-basis: 50px;
-                    text-align: end;
-                }
-            }
+            margin-left: 10px;
+            margin-right: 10px;
         }
         .file-upload {
             flex-basis: 200px;
@@ -119,14 +91,9 @@
                 width: 100%;
             }
         }
-        .files-description {
-            flex-basis: 200px;
-            background-color: white;
-            padding: 10px 10px;
-            box-shadow: 0 6px 8px rgba(102,119,136,.03), 0 1px 2px rgba(102,119,136,.3);
-            h1 {
-                margin: 0;
-            }
+        aside.card {
+            flex-basis: 300px;
+            flex-shrink: 0;
         }
     }
 </style>

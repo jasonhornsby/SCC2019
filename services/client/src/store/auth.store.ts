@@ -17,15 +17,16 @@ export default class Auth extends VuexModule {
 
     @Action({ rawError: true })
     async login(payload: { username: any, password: any}) {
-        // context.commit('loginRequest', { username: payload.username });
         let user;
         try {
             user = await userService.login(payload.username, payload.password);
         } catch (e) {
             this.context.commit('loginFailure', e);
+            this.context.commit('newNotification', { name: e.message, type: 'error'});
             return;
         }
         this.context.commit('loginSuccess', user);
+        this.context.commit('newNotification', { name: 'Successfully logged in', type: 'alert'});
         return user;
     }
 
@@ -36,9 +37,11 @@ export default class Auth extends VuexModule {
             user = await userService.register(payload.username, payload.password);
         } catch (e) {
             this.context.commit('loginFailure', e);
+            this.context.commit('newNotification', { name: e.message, type: 'error'});
             return;
         }
         this.context.commit('loginSuccess', user);
+        this.context.commit('newNotification', { name: 'Successfully logged in', type: 'alert'});
         return user;
     }
 
