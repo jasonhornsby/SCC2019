@@ -113,7 +113,7 @@ def get_files():
     elif not authenticate(usertoken):
         return not_authenticated(msg="No valid token.")
     # get files from db
-    db_response = File1.query.all()  # .get(user=username)
+    db_response = File1.query.filter_by(user=username).all()
     js = json.dumps(db_response, cls=FileEncoder)
     return Response(js, status=200, mimetype='application/json')
 
@@ -163,7 +163,7 @@ def add_file():
         # stored_file = depot.get(fileid)
         file.seek(0, os.SEEK_END)
         file_length = file.tell()
-        file_object = File1(file.filename, file_length, "user", file)
+        file_object = File1(file.filename, file_length, username, file)
         db.session.add(file_object)
         db.session.commit()
         js = json.dumps(file_object, cls=FileEncoder)
@@ -198,7 +198,6 @@ def delete_file(id):
         return Response(json.dumps(message), status=200, mimetype='application/json')
     else:
         return not_found()
-    # todo else: error
 
 
 @app.route("/files/<id>", methods=["GET"])
