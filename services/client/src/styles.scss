@@ -1,0 +1,41 @@
+@import "../node_modules/bootstrap/scss/bootstrap";
+
+body, html {
+  margin: 0;
+  font-family: 'Avenir', sans-serif;
+  color: #111;
+}
+
+// Antialias all the text
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.app-wrapper {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 10px;
+  box-sizing: border-box;
+
+  .app {
+    width: 80%;
+  }
+}
+
+.auth-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 50px;
+
+  form {
+    width: 300px;
+    max-width: 100%;
+    margin-top: 20vh;
+  }
+}

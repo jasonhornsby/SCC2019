@@ -1,68 +1,85 @@
 import { Module, VuexModule, Mutation, Action } from 'vuex-module-decorators'
-import Vue from 'vue';
+import { userService } from '@/services/user.service';
 import router from '@/router';
+
+const user = JSON.parse(localStorage.getItem('user') as string) || null;
 
 @Module
 export default class Auth extends VuexModule {
 
-    username: string;
-    token: string;
-    id: number;
+    public user = user;
+    public error: any = null;
+    public loading: boolean = false;
 
-    /**
-     * Return boolean based on login state
-     */
     get isLoggedIn() {
-        return !!this.token;
+        return !!this.user;
     }
 
-    /**
-     * Fetches the user to be displayed on the site
-     */
-    get user() {
-        return {
-            username: this.username,
-            id: this.id
+    @Action({ rawError: true })
+    async login(payload: { username: any, password: any}) {
+        let user;
+        try {
+            user = await userService.login(payload.username, payload.password);
+        } catch (e) {
+            this.context.commit('loginFailure', e);
+            this.context.commit('newNotification', { name: e.message, type: 'error'});
+            return;
         }
+        this.context.commit('loginSuccess', user);
+        this.context.commit('newNotification', { name: 'Successfully logged in', type: 'alert'});
+        return user;
     }
 
-    // TODO: Add Response Types
+    @Action({ rawError: true })
+    async register(payload: { username: string, password: string }) {
+        let user;
+        try {
+            user = await userService.register(payload.username, payload.password);
+        } catch (e) {
+            this.context.commit('loginFailure', e);
+            this.context.commit('newNotification', { name: e.message, type: 'error'});
+            return;
+        }
+        this.context.commit('loginSuccess', user);
+        this.context.commit('newNotification', { name: 'Successfully logged in', type: 'alert'});
+        return user;
+    }
+
+    @Action
+    doLogout() {
+        userService.logout();
+        this.context.commit('logout');
+    }
+
     @Mutation
-    login(res: any) {
-        const { token, username, id } = res;
-        this.username = username;
-        this.token = token;
-        this.id = id;
-        return;
+    loginRequest(user: any) {
+        this.loading = true;
     }
 
+    @Mutation
+    loginSuccess(user: any) {
+        this.loading = false;
+        this.user = {
+            id: user.id,
+            username: user.username,
+        };
+
+        localStorage.setItem('user', JSON.stringify(this.user));
+        userService.setLoginToken(user.token);
+        router.push('/');
+    }
+
+    @Mutation
+    loginFailure(error: Error) {
+        this.loading = false;
+        this.error = error.message;
+    }
 
     @Mutation
     logout() {
-        this.username = '';
-        this.token = '';
-        delete this.id;
-    }
-
-    @Action({ commit: 'logout' })
-    doLogout() {
-        delete Vue.axios.defaults.headers.common['Authorization'];
-        localStorage.removeItem('token');
-        router.push('/login');
-        return;
-    }
-
-    /**
-     * Adds authorization header to axios
-     * Sets localstorage token
-     * Changes route to homepage
-     * @param res
-     */
-    @Action({ commit: 'login' })
-    doLogin(res: any) {
-        Vue.axios.defaults.headers.common['Authorization'] = res.token;
-        localStorage.setItem('token', res.token);
-        return res;
+        this.loading = false;
+        this.user = false;
+        this.error = false;
     }
 
 }

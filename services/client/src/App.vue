@@ -1,20 +1,22 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/login">Login</router-link> |
-      <router-link to="/register">Register</router-link>
+  <div class="app-wrapper">
+    <notification></notification>
+    <div class="app">
+      <navbar></navbar>
+      <router-view/>
     </div>
-    <router-view/>
   </div>
 </template>
+<style src="./styles.scss" lang="scss"></style>
+<script lang="ts">
+  import Vue from "vue";
+  import Component from 'vue-class-component';
+  import Navbar from '@/components/navbar.component.vue';
+  import Notification from '@/components/notification.component';
 
-<style lang="scss">
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-</style>
+  @Component({
+    components: {Navbar, Notification}
+  })
+  export default class App extends Vue {
+  }
+</script>
