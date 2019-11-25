@@ -1,3 +1,3 @@
 import { JwtManager } from '@overnightjs/jwt';
 
-export const jwtManager = new JwtManager('secretasdasdasdasdasdasdasdasdasdasdasdasdasdasda', '10h');
+export const jwtManager = new JwtManager('secret', '10h');

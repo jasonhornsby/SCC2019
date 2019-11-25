@@ -45,7 +45,7 @@ async function getUsers() {
 function logout() {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authentication'];
+    delete axios.defaults.headers.common['Authorization'];
     router.push('/login');
 }
 
@@ -60,7 +60,11 @@ async function getAll() {
  */
 function setLoginToken(token: string) {
     localStorage.setItem('token', token);
-    axios.defaults.headers.common['Authentication'] = 'Bearer ' + token;
+    setAuthHeader(token);
+}
+
+function setAuthHeader(token: string) {
+    axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
 }
 
 
@@ -70,5 +74,6 @@ export const userService = {
     setLoginToken,
     register,
     logout,
+    setAuthHeader,
     getAll
 };

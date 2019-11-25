@@ -20,6 +20,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test3.db'
 app.config['JWT_TOKEN_LOCATION'] = 'headers'
 app.config['JWT_HEADER_NAME'] = 'Authorization'
 app.config['JWT_HEADER_TYPE'] = 'Bearer'
+app.config['JWT_IDENTITY_CLAIM'] = 'id'
 
 # security
 app.config['JWT_SECRET_KEY'] = 'secret'  # Change this!

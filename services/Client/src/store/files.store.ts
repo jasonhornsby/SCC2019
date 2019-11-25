@@ -29,4 +29,9 @@ export default class FilesStore extends VuexModule {
         let files = await fileService.getFiles();
         this.context.commit('setFiles', files);
     }
+
+    @Mutation
+    addFile(file: IFile) {
+        this.files.push(file);
+    }
 }

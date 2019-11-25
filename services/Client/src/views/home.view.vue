@@ -67,7 +67,7 @@
 
             // Create Upload form data
             let formData = new FormData();
-            formData.append('file', file);
+            formData.append('file_content', file);
 
             // Reset upload UI
             this.uploading = true;
@@ -90,6 +90,7 @@
                         name: `File successfully uploaded`,
                         type: 'alert'
                     });
+                    this.$store.commit('addFile', val.data);
                 })
                 .catch(err => {
                     this.uploading = false;
