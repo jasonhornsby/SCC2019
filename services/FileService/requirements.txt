@@ -4,3 +4,5 @@ flasgger==0.9.3
 filedepot
 werkzeug
 flask-jwt-extended
+flask-cors==3.0.8
+

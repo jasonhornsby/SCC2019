@@ -10,10 +10,12 @@ from depot.fields.sqlalchemy import UploadedFileField
 from flask import Flask, request, Response
 from flask_sqlalchemy import SQLAlchemy
 from flasgger import Swagger
+from flask_cors import CORS
 
 # Create the Flask application and the Flask-SQLAlchemy object.
 app = Flask(__name__)
 app.config['DEBUG'] = True
+CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test3.db'
 app.config['JWT_TOKEN_LOCATION'] = 'headers'
 app.config['JWT_HEADER_NAME'] = 'Authorization'

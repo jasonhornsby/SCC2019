@@ -16,7 +16,9 @@
     import Vue from 'vue';
     import Component from 'vue-class-component';
 
-    @Component()
+    @Component({
+        name: 'Notification'
+    })
     export default class NotificationComponent extends Vue {
 
         get notifications() {

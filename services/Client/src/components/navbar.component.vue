@@ -1,5 +1,5 @@
 <template>
-    <nav class="navbar navbar-light mb-3">
+    <nav class="navbar sticky-top navbar-light mb-3">
         <router-link to="/" class="navbar-brand">SCC</router-link>
 
         <div class="title">
@@ -7,9 +7,9 @@
         </div>
 
         <div class="login">
-            <button class="btn btn-dark" @click="logout()" v-if="isLoggedIn">Logout</button>
-            <router-link to="/login" class="btn btn-dark" v-if="!isLoggedIn">Login</router-link>
-            <router-link to="/register" class="btn btn-outline-dark" v-if="!isLoggedIn">Register</router-link>
+            <button class="btn btn-sm btn-dark" @click="logout()" v-if="isLoggedIn">Logout</button>
+            <router-link to="/login" class="btn btn-sm btn-dark" v-if="!isLoggedIn">Login</router-link>
+            <router-link to="/register" class="btn btn-sm btn-outline-dark" v-if="!isLoggedIn">Register</router-link>
         </div>
     </nav>
 </template>
