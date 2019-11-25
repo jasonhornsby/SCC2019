@@ -3,7 +3,7 @@ import VueRouter from 'vue-router'
 import HomeView from '@/views/home.view.vue';
 import LoginView from '@/views/login.view.vue';
 import RegisterView from '@/views/register.view.vue';
-import store from '@/store';
+import FileView from '@/views/file.view.vue';
 
 Vue.use(VueRouter);
 
@@ -28,6 +28,15 @@ const routes = [
     path: '/register',
     name: 'register',
     component: RegisterView,
+    meta: {
+      requiresAuth: false
+    }
+  },
+  {
+    path: '/file/:id',
+    name: 'file',
+    component: FileView,
+    props: true,
     meta: {
       requiresAuth: false
     }

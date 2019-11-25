@@ -28,6 +28,17 @@ async function login(username: string, password: string) {
     return response.data;
 }
 
+async function getUsers() {
+    let response: AxiosResponse;
+    try {
+        response = await axios.get('http://localhost:8000/users');
+    } catch (e) {
+        console.error(e);
+        return
+    }
+    return response.data;
+}
+
 /**
  * Logout by deleting the token
  */

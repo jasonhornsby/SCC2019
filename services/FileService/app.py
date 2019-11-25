@@ -4,11 +4,13 @@ from datetime import datetime, date
 from flask import Flask, request, Response, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flasgger import Swagger
+from flask_cors import CORS
 
 # Create the Flask application and the Flask-SQLAlchemy object.
 app = Flask(__name__)
 app.config['DEBUG'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+CORS(app)
 
 db = SQLAlchemy(app)
 """Dokumentation & Testanfragen zu finden unter /apidocs/"""

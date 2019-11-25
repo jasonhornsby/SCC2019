@@ -1,99 +1,115 @@
 <template>
-    <div class="files-wrapper">
-        <aside class="file-upload">
-            <button class="btn btn-dark">Upload new File</button>
+    <div class="files-wrapper row" ref="body">
+        <aside class="file-upload col-12 col-md-3 pb-1 pb-md-0">
+            <button class="btn btn-dark" @click="triggerUpload()">Upload new File</button>
+            <input type="file" ref="upload" class="invisible" v-on:change="handleSubmitFile()"/>
         </aside>
 
-        <main class="files-list">
+        <main class="files-list col-12 col-md-9">
+
+            <div class="progress mb-2" v-if="uploading">
+                <div class="progress-bar" role="progressbar" v-bind:style="{ width: uploadedPercent + '%' }" aria-valuemin="0" aria-valuemax="100" ref="progress">{{ uploadedPercent }}%</div>
+            </div>
+
+            <no-item v-if="files.length === 0" message="No files uploaded"></no-item>
+
             <ul class="list-group">
                 <li class="list-group-item"
                     v-for="file in files"
                     v-bind:key="file.id"
-                    @click="selectFile(file.id)"
-                    :class="{'active' : selectedFile && selectedFile.id === file.id}"
+                    @click="goToFile(file.id)"
                 >
                     {{ file.name }}
                     <span class="badge badge-primary badge-pill">{{ file.size }}</span>
                 </li>
             </ul>
         </main>
-
-        <aside class="card" v-if="selectedFile">
-            <div class="card-header">
-                {{ selectedFile.name }}
-            </div>
-        </aside>
     </div>
 </template>
 
 <script lang="ts">
-    import Vue from 'vue';
-    import Component from 'vue-class-component';
+    import Vue from "vue";
+    import Component from "vue-class-component";
+    import axios from "axios";
+    import NoItem from "@/components/noItem.component.vue";
 
     @Component({
-        name: 'HomeView'
+        name: 'HomeView',
+        components: { NoItem }
     })
     export default class HomeView extends Vue {
 
-        files = [
-            {
-                id: 1,
-                name: 'My first file',
-                uploaded: '22.03.2019',
-                size: '3mb'
-            },
-            {
-                id: 2,
-                name: 'My second file',
-                uploaded: '22.03.2019',
-                size: '3mb'
-            },
-            {
-                id: 3,
-                name: 'My third file',
-                uploaded: '22.03.2019',
-                size: '3mb'
-            }
-        ];
+        uploading: boolean = false;
+        uploadedPercent: number = 0;
 
-        selectedFile: any = null;
+        get files() {
+            return this.$store.getters.getFiles;
+        }
 
         mounted() {
             this.$store.commit('changeTitle', 'My files');
+            this.$store.dispatch('fetchFiles');
         }
 
-        selectFile(id: number) {
-            let newSelection = this.files.find(file => file.id === id);
-            if (newSelection === this.selectedFile) {
-                this.selectedFile = null;
-            } else {
-                this.selectedFile = newSelection;
+        goToFile(id: number) {
+            this.$router.push(`/file/${ id }`);
+        }
+
+        triggerUpload() {
+            this.$refs.upload.click();
+        }
+
+        handleSubmitFile() {
+            let file: File = this.$refs.upload.files[0];
+
+            let formData = new FormData();
+            formData.append('file', file);
+            this.uploading = true;
+
+            axios.post(
+                'http://localhost:5000/files',
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    },
+                    onUploadProgress: this.handleUploadProgress,
+                }
+            )
+                .then(val => {
+                    this.uploading = false;
+                    this.$store.commit('newNotification', {
+                        name: `File successfully uploaded`,
+                        type: 'alert'
+                    });
+                })
+                .catch(err => {
+                    this.uploading = false;
+                    this.$store.commit('newNotification', {
+                        name: `File "${ file.name }" failed to upload. Please try again.`,
+                        type: 'error'
+                    })
+                });
+        }
+
+        handleUploadProgress(progress: ProgressEvent) {
+            if (!progress.lengthComputable) {
+                return;
             }
+            this.uploadedPercent = progress.loaded / progress.total * 100;
         }
     }
 </script>
 
-
-
 <style lang="scss">
-    .files-wrapper {
-        display: flex;
-        flex-direction: row;
 
-        .files-list {
-            flex: 1;
-            margin-left: 10px;
-            margin-right: 10px;
+    .file-upload {
+        button {
+            width: 100%;
         }
-        .file-upload {
-            flex-basis: 200px;
-            .btn {
-                width: 100%;
-            }
-        }
-        aside.card {
-            flex-basis: 300px;
-            flex-shrink: 0;
-        }
+    }
+
+    .list-group-item {
+        cursor: pointer;
     }
 </style>
