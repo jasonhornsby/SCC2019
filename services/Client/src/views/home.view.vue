@@ -42,6 +42,8 @@
         uploading: boolean = false;
         uploadedPercent: number = 0;
 
+        $refs: any;
+
         get files() {
             return this.$store.getters.getFiles;
         }
@@ -60,12 +62,18 @@
         }
 
         handleSubmitFile() {
+            // Get the uploaded file
             let file: File = this.$refs.upload.files[0];
 
+            // Create Upload form data
             let formData = new FormData();
             formData.append('file', file);
-            this.uploading = true;
 
+            // Reset upload UI
+            this.uploading = true;
+            this.uploadedPercent = 0;
+
+            // Send the request
             axios.post(
                 'http://localhost:5000/files',
                 formData,
@@ -92,11 +100,15 @@
                 });
         }
 
+        /**
+         * Handle Upload Progress and update state
+         * @param progress
+         */
         handleUploadProgress(progress: ProgressEvent) {
             if (!progress.lengthComputable) {
                 return;
             }
-            this.uploadedPercent = progress.loaded / progress.total * 100;
+            this.uploadedPercent = Math.round(progress.loaded / progress.total * 100);
         }
     }
 </script>

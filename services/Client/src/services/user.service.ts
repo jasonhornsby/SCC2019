@@ -60,7 +60,7 @@ async function getAll() {
  */
 function setLoginToken(token: string) {
     localStorage.setItem('token', token);
-    axios.defaults.headers.common['Authentication'] = token;
+    axios.defaults.headers.common['Authentication'] = 'Bearer ' + token;
 }
 
 

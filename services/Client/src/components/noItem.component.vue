@@ -9,6 +9,6 @@
     @Component
     export default class NoItem extends Vue {
         @Prop()
-        public message;
+        public message: string;
     }
 </script>
