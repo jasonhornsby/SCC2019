@@ -21,8 +21,17 @@
         name: 'FileView'
     })
     export default class FileView extends Vue {
+
+        mounted() {
+            this.$store.dispatch('fetchFile', this.id);
+        }
+
         get id() {
             return this.$route.params.id;
+        }
+
+        get file() {
+            return this.$store.getters.getFile(this.id);
         }
     }
 </script>

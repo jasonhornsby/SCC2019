@@ -20,7 +20,7 @@
                     @click="goToFile(file.id)"
                 >
                     {{ file.name }}
-                    <span class="badge badge-primary badge-pill">{{ file.size }}</span>
+                    <span class="badge badge-primary badge-pill">{{ humanFileSize(file.size) }}</span>
                 </li>
             </ul>
         </main>
@@ -56,6 +56,15 @@
         goToFile(id: number) {
             this.$router.push(`/file/${ id }`);
         }
+        humanFileSize(size: number) {
+            if (size < 1024) return size + ' B';
+            let i = Math.floor(Math.log(size) / Math.log(1024));
+            let num: any = (size / Math.pow(1024, i));
+            let round = Math.round(num);
+            num = round < 10 ? num.toFixed(2) : round < 100 ? num.toFixed(1) : round;
+            return `${num} ${'KMGTPEZY'[i-1]}B`
+        }
+
 
         triggerUpload() {
             this.$refs.upload.click();

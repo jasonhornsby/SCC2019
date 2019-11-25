@@ -8,7 +8,7 @@ async function getFiles(): Promise<IFile[]> {
 }
 
 async function getFile(id: number): Promise<IFile> {
-    let response: AxiosResponse = await axios.get('http://localhost:5000/files');
+    let response: AxiosResponse = await axios.get(`http://localhost:5000/files/${ id }`);
     return response.data;
 }
 
