@@ -72,3 +72,6 @@ venv
 # python cache
 services/FileService/__pycache__/
 
+# temp file storage
+services/FileService/files/
+

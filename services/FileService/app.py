@@ -1,6 +1,10 @@
 import json
+import os
 from datetime import datetime, date
 
+from depot.io.interfaces import FileStorage
+from depot.manager import DepotManager
+from depot.fields.sqlalchemy import UploadedFileField
 from flask import Flask, request, Response, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flasgger import Swagger
@@ -9,12 +13,17 @@ from flask_cors import CORS
 # Create the Flask application and the Flask-SQLAlchemy object.
 app = Flask(__name__)
 app.config['DEBUG'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
 CORS(app)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test3.db'
 
 db = SQLAlchemy(app)
 """Dokumentation & Testanfragen zu finden unter /apidocs/"""
 swagger = Swagger(app)
+
+# Depot for actual files
+DepotManager.configure('default', {
+    'depot.storage_path': './files'
+})
 
 
 class FileEncoder(json.JSONEncoder):
@@ -29,6 +38,8 @@ class FileEncoder(json.JSONEncoder):
             }
         elif isinstance(file_info, (datetime, date)):
             return file_info.isoformat()
+        elif isinstance(file_info, FileStorage):
+            return "str(file_info)"
         else:
             return super().default(file_info)
 
@@ -38,14 +49,15 @@ class File1(db.Model):
     name = db.Column(db.String(128), index=True, unique=True)
     size = db.Column(db.Integer)
     upload_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    # content = db.Column(db.)
     user = db.Column(db.String(128))
+    fileid = db.Column(UploadedFileField)
 
-    def __init__(self, name, size, user):
+    def __init__(self, name, size, user, fileid):
         self.name = name
         self.size = size
         self.upload_date = datetime.utcnow()
         self.user = user
+        self.fileid = fileid
 
 
 # Create the database tables.
@@ -62,6 +74,17 @@ def get_files():
     """
     Get all files.
     ---
+    parameters:
+      - name: username
+        in: query
+        description: authentication token of user
+        required: true
+        type: string
+      - name: usertoken
+        in: query
+        description: authentication token of user
+        required: true
+        type: string
     responses:
         200:
           schema:
@@ -81,8 +104,18 @@ def get_files():
                   type: string
 
     """
+    # get username
+    username = request.args.get("username")
+    usertoken = request.args.get("usertoken")
+    if not username:
+        return not_authenticated(msg="Parameter 'username' is missing.")
+    elif not usertoken:
+        return not_authenticated(msg="Parameter 'usertoken' is missing.")
+    # authenticate with token
+    elif not authenticate(usertoken):
+        return not_authenticated(msg="No valid token.")
     # get files from db
-    db_response = File1.query.all()
+    db_response = File1.query.filter_by(user=username).all()
     js = json.dumps(db_response, cls=FileEncoder)
     return Response(js, status=200, mimetype='application/json')
 
@@ -95,20 +128,19 @@ def add_file():
     operationId: add_file
     tags:
       - files
+    consumes:
+      - multipart/form-data
     parameters:
-      - name: file_info
-        in: body
+      - name: username
+        in: formData
+        description: user name
+        required: true
+        type: string
+      - name: file_content
+        in: formData
+        type: file
         description: File to create
         required: true
-        schema:
-          type: object
-          properties:
-            name:
-              type: string
-            size:
-              type: integer
-            user:
-              type: string
     responses:
       202:
         description: Successfully created file
@@ -125,15 +157,19 @@ def add_file():
             user:
               type: string
      """
-    if isinstance(request.json, str):
-        file_info = json.loads(request.json)
-    else:
-        file_info = request.json
-    file = File1(file_info["name"], file_info["size"], file_info["user"])  # TODO , default=decode_file_info
-    db.session.add(file)
-    db.session.commit()
-    js = json.dumps(file, cls=FileEncoder)
-    return Response(js, status=202, mimetype='application/json')
+    file = request.files["file_content"]
+    username = request.form.get("username")
+    if file:
+        # depot = DepotManager.get()
+        # fileid = depot.create(file)
+        # stored_file = depot.get(fileid)
+        file.seek(0, os.SEEK_END)
+        file_length = file.tell()
+        file_object = File1(file.filename, file_length, username, file)
+        db.session.add(file_object)
+        db.session.commit()
+        js = json.dumps(file_object, cls=FileEncoder)
+        return Response(js, status=201, mimetype='application/json')
 
 
 @app.route("/files/<id>", methods=["DELETE"])
@@ -154,6 +190,8 @@ def delete_file(id):
     """
     file = File1.query.get(id)
     if file:
+        depot = DepotManager.get()
+        depot.delete(file.fileid)
         db.session.delete(file)
         db.session.commit()
         message = {
@@ -162,7 +200,6 @@ def delete_file(id):
         return Response(json.dumps(message), status=200, mimetype='application/json')
     else:
         return not_found()
-    # todo else: error
 
 
 @app.route("/files/<id>", methods=["GET"])
@@ -203,6 +240,16 @@ def get_single_file(id):
         return not_found()
 
 
+@app.route("/files/<id>/download", methods=["GET"])
+def get_download_link(id):
+    # StoredFile.public_url
+    message = {
+        "status": 404,
+        "message": "Not yet implemented",
+    }
+    return Response(json.dumps(message), status=404)
+
+
 @app.errorhandler(404)
 def not_found(error=None):
     message = {
@@ -210,6 +257,20 @@ def not_found(error=None):
         "message": "Not Found: " + request.url,
     }
     return Response(json.dumps(message), status=404)
+
+
+@app.errorhandler(401)
+def not_authenticated(error=None, msg="Failed authentication!"):
+    message = {
+        "status": 401,
+        "message": "Unauthorized: " + msg,
+    }
+    return Response(json.dumps(message), status=401)
+
+
+def authenticate(usertoken):
+    # todo add functionality
+    return True
 
 
 # TODO add test data

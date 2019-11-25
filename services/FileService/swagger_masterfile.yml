@@ -26,6 +26,17 @@ paths:
         - files
       summary: Read the entire list of files
       description: Access to all files
+      parameters:
+        - name: username
+          in: query
+          description: authentication token of user
+          required: true
+          type: string
+        - name: usertoken
+          in: query
+          description: authentication token of user
+          required: true
+          type: string
       responses:
         200:
           description: Successfully got file list
@@ -52,21 +63,19 @@ paths:
         - files
       summary: Add a new file
       description: Add a new file
+      consumes:
+        - multipart/form-data
       parameters:
-        - name: file_info
-          in: body
+        - name: username
+          in: formData
+          description: user name
+          required: true
+          type: string
+        - name: file_content
+          in: formData
+          type: file
           description: File to create
           required: true
-          schema:
-            type: object
-            properties:
-              name:
-                type: string
-              size:
-                type: integer
-              user:
-                type: string
-
       responses:
         202:
           description: Successfully created file
@@ -82,7 +91,6 @@ paths:
                 type: integer
               user:
                 type: string
-
   /files/{id}:
     get:
       operationId: get_single_file
