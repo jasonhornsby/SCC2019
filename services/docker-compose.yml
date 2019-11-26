@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  files:
+    build:
+      FileService/
+    ports:
+      - "5000"
+  client:
+    build:
+      Client/
+    ports:
+      - "8080"
+  redirector:
+    build:
+      Redirector/
+    ports:
+      - "80:80"
