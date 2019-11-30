@@ -16,7 +16,11 @@ produces:
   - application/json
 
 
-
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
 # Paths supported by the server application
 paths:
   /files:
@@ -26,17 +30,8 @@ paths:
         - files
       summary: Read the entire list of files
       description: Access to all files
-      parameters:
-        - name: username
-          in: query
-          description: authentication token of user
-          required: true
-          type: string
-        - name: usertoken
-          in: query
-          description: authentication token of user
-          required: true
-          type: string
+      security:
+        - Bearer: []
       responses:
         200:
           description: Successfully got file list
@@ -65,12 +60,9 @@ paths:
       description: Add a new file
       consumes:
         - multipart/form-data
+      security:
+        - Bearer: []
       parameters:
-        - name: username
-          in: formData
-          description: user name
-          required: true
-          type: string
         - name: file_content
           in: formData
           type: file
@@ -98,6 +90,8 @@ paths:
         - Files
       summary: Get a specific file
       description: Get one specific file by its id
+      security:
+        - Bearer: []
       parameters:
         - name: id
           in: path
@@ -130,6 +124,8 @@ paths:
         - Files
       summary: Delete a File
       description: Delete a File by its id
+      security:
+        - Bearer: []
       parameters:
         - name: id
           in: path
@@ -140,4 +136,3 @@ paths:
           description: Successfully deleted a file from db
         404:
           description: "Not Found: http://.../{id}"
-

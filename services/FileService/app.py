@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 from depot.io.interfaces import FileStorage
 from depot.manager import DepotManager
 from depot.fields.sqlalchemy import UploadedFileField
-from flask import Flask, request, Response
+from flask import Flask, request, Response, redirect, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flasgger import Swagger
 from flask_cors import CORS
@@ -16,7 +16,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 app.config['DEBUG'] = True
 CORS(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test3.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
 app.config['JWT_TOKEN_LOCATION'] = 'headers'
 app.config['JWT_HEADER_NAME'] = 'Authorization'
 app.config['JWT_HEADER_TYPE'] = 'Bearer'
@@ -59,18 +59,18 @@ class File1(db.Model):
     # todo put für dateiname and freigaben
     # todo get für freigegebene Dateien mit query string parameter von get eigene zu unterscheiden
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), index=True, unique=True)
+    name = db.Column(db.String(128), index=True)
     size = db.Column(db.Integer)
     upload_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    user = db.Column(db.String(128))
-    fileid = db.Column(UploadedFileField)
+    user = db.Column(db.Integer)
+    fileobj = db.Column(UploadedFileField)
 
-    def __init__(self, name, size, user, fileid):
+    def __init__(self, name, size, user, fileobj):
         self.name = name
         self.size = size
         self.upload_date = datetime.utcnow()
         self.user = user
-        self.fileid = fileid
+        self.fileobj = fileobj
 
 
 # Create the database tables.
@@ -88,12 +88,13 @@ def get_files():
     """
     Get all files.
     ---
-    parameters:
-      - name: usertoken
+    securityDefinitions:
+      Bearer:
+        type: apiKey
+        name: Authorization
         in: header
-        description: authentication token of user
-        required: true
-        type: string
+    security:
+        - Bearer: []
     responses:
         200:
           schema:
@@ -113,16 +114,14 @@ def get_files():
                   type: string
 
     """
-    # get username
-    username = get_jwt_identity()
-    if not username:
+    # get userid
+    userid = get_jwt_identity()
+    if not userid:
         return not_authenticated()
     # else: get files from db
-    db_response = File1.query.filter_by(user=username).all()
+    db_response = File1.query.filter_by(user=userid).all()
     js = json.dumps(db_response, cls=FileEncoder)
     return Response(js, status=200, mimetype='application/json')
-
-
 
 
 def generate_secure_and_unique_filename(file):
@@ -152,7 +151,7 @@ def add_file():
     consumes:
       - multipart/form-data
     parameters:
-      - name: usertoken
+      - name: userid
         in: header
         description: user name
         required: true
@@ -163,7 +162,7 @@ def add_file():
         description: File to create
         required: true
     responses:
-      202:
+      201:
         description: Successfully created file
         schema:
           properties:
@@ -179,21 +178,31 @@ def add_file():
               type: string
      """
     file = request.files["file_content"]
-    username = get_jwt_identity()
-    if not username:
+    userid = get_jwt_identity()
+    if not userid:
         return not_authenticated()
     if file:
         # depot = DepotManager.get()
         # fileid = depot.create(file)
         # stored_file = depot.get(fileid)
-        file.seek(0, os.SEEK_END)
-        file_length = file.tell()
-        secure_filename = generate_secure_and_unique_filename(file)
-        file_object = File1(secure_filename, file_length, username, file)
-        db.session.add(file_object)
-        db.session.commit()
-        js = json.dumps(file_object, cls=FileEncoder)
-        return Response(js, status=201, mimetype='application/json')
+        return create_file_obj(file, userid)
+    else:
+        return missing_file()
+
+
+def create_file_obj(file, userid):
+    file.seek(0, os.SEEK_END)
+    file_length = file.tell()
+    file.seek(0, os.SEEK_SET)
+    secured_filename = generate_secure_and_unique_filename(file)
+    file_object = File1(secured_filename, file_length, userid, file)
+    db.session.add(file_object)
+    db.session.commit()
+    js = json.dumps(file_object, cls=FileEncoder)
+    return Response(js, status=201, mimetype='application/json')
+
+
+
 
 
 @app.route("/files/<file_id>", methods=["DELETE"])
@@ -203,11 +212,11 @@ def delete_file(file_id):
     Delete a File by its id
     ---
     parameters:
-      - name: id
+      - name: file_id
         in: path
         type: integer
         required: True
-      - name: usertoken
+      - name: userid
         in: header
         description: authentication token of user
         required: true
@@ -218,15 +227,13 @@ def delete_file(file_id):
       404:
         description: Not Found
     """
-    username = get_jwt_identity()
-    if not username:
+    userid = get_jwt_identity()
+    if not userid:
         return not_authenticated()
     file = File1.query.get(file_id)
     if file:
-        if file.user != username:
+        if file.user != userid:
             return not_authorized()
-        depot = DepotManager.get()
-        depot.delete(file.fileid)
         db.session.delete(file)
         db.session.commit()
         message = {
@@ -273,12 +280,12 @@ def get_single_file(file_id):
       404:
           description: Not Found
     """
-    username = get_jwt_identity()
-    if not username:
+    userid = get_jwt_identity()
+    if not userid:
         return not_authenticated()
     file = File1.query.get(file_id)
     if file:
-        if file.user != username:
+        if file.user != userid:
             return not_authorized()
         js = json.dumps(file, cls=FileEncoder)
         return Response(js, status=200, mimetype='application/json')
@@ -288,16 +295,35 @@ def get_single_file(file_id):
 
 @app.route("/files/<file_id>/download", methods=["GET"])
 @jwt_required
-def get_download_link(file_id):
-    username = get_jwt_identity()
-    if not username:
+def get_download(file_id):
+    """
+    Get the content of one specific file by its id.
+    ---
+    parameters:
+      - name: id
+        in: path
+        description: Id of the file
+        type: integer
+        required: True
+      - name: usertoken
+        in: header
+        description: authentication token of user
+        required: true
+        type: string
+    responses:
+      404:
+        description: Not Found
+    """
+    userid = get_jwt_identity()
+    if not userid:
         return not_authenticated()
-    # todo StoredFile.public_url
-    message = {
-        "status": 404,
-        "message": "Not yet implemented",
-    }
-    return Response(json.dumps(message), status=404, mimetype='application/json')
+    file = File1.query.get(file_id)
+    if file:
+        if file.user != userid:
+            return not_authorized()
+    depot = DepotManager.get()
+    depot.get(file.fileobj)
+    return send_file(file.fileobj.file, attachment_filename=file.fileobj.filename)
 
 
 @app.errorhandler(404)
@@ -325,6 +351,15 @@ def not_authorized(error=None):
         "message": "Forbidden: Insufficient access rights",
     }
     return Response(json.dumps(message), status=403, mimetype='application/json')
+
+
+@app.errorhandler(400)
+def missing_file(error=None):
+    message = {
+        "status": 400,
+        "message": "Missing file",
+    }
+    return Response(json.dumps(message), status=400, mimetype='application/json')
 
 
 # add test data
