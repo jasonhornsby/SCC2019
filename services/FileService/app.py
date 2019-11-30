@@ -381,7 +381,7 @@ def change_filename(file_id):
         return not_authenticated()
     existing_file = File1.query.get(file_id)
     if not existing_file:
-        return missing_file()
+        return not_found()
     elif existing_file and existing_file.user != userid:
         return not_authorized()
     else:
