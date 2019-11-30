@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 from depot.io.interfaces import FileStorage
 from depot.manager import DepotManager
 from depot.fields.sqlalchemy import UploadedFileField
-from flask import Flask, request, Response, redirect, send_file
+from flask import Flask, request, Response, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flasgger import Swagger
 from flask_cors import CORS
@@ -59,7 +59,7 @@ class File1(db.Model):
     # todo put für dateiname and freigaben
     # todo get für freigegebene Dateien mit query string parameter von get eigene zu unterscheiden
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), index=True)
+    name = db.Column(db.String(128))
     size = db.Column(db.Integer)
     upload_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     user = db.Column(db.Integer)
@@ -202,9 +202,6 @@ def create_file_obj(file, userid):
     return Response(js, status=201, mimetype='application/json')
 
 
-
-
-
 @app.route("/files/<file_id>", methods=["DELETE"])
 @jwt_required
 def delete_file(file_id):
@@ -323,7 +320,80 @@ def get_download(file_id):
             return not_authorized()
     depot = DepotManager.get()
     depot.get(file.fileobj)
-    return send_file(file.fileobj.file, attachment_filename=file.fileobj.filename)
+    return send_file(file.fileobj.file, as_attachment=True, attachment_filename=file.fileobj.filename)
+
+
+@app.route("/files/<file_id>", methods=["PATCH"])
+@jwt_required
+def change_filename(file_id):
+    """
+    Replace the name of an existing file.
+    ---
+    operationId: change_filename
+    tags:
+      - files
+    consumes:
+      - schema:
+          type: object
+            properties:
+              name:
+                type: string
+    parameters:
+      - name: userid
+        in: header
+        description: user id
+        required: true
+        type: int
+      - name: file_id
+        in: path
+        type: integer
+        required: True
+      - name: file_info
+        in: body
+        schema:
+          type: object
+            properties:
+              name:
+                type: string
+        required: True
+    responses:
+      200:
+        description: Successfully changed file
+        schema:
+          properties:
+            name:
+              type: string
+            size:
+              type: integer
+            upload_date:
+              type: string
+            id:
+              type: integer
+            user:
+              type: string
+      400:
+        description: Missing file object
+      403:
+        description: Unauthorized
+    """
+    userid = get_jwt_identity()
+    if not userid:
+        return not_authenticated()
+    existing_file = File1.query.get(file_id)
+    if not existing_file:
+        return missing_file()
+    elif existing_file and existing_file.user != userid:
+        return not_authorized()
+    else:
+        file_info = request.json
+        existing_file.name = secure_filename(file_info["name"])
+        existing_fileobj = existing_file.fileobj
+        depot = DepotManager.get()
+        depot.replace(existing_fileobj, existing_fileobj.file, filename=secure_filename(file_info["name"]))
+        db.session.commit()
+        file_object = File1.query.get(file_id)
+        js = json.dumps(file_object, cls=FileEncoder)
+        return Response(js, status=200, mimetype='application/json')
 
 
 @app.errorhandler(404)
