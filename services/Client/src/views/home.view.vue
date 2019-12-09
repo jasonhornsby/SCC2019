@@ -20,7 +20,7 @@
                     @click="goToFile(file.id)"
                 >
                     {{ file.name }}
-                    <span class="badge badge-primary badge-pill">{{ humanFileSize(file.size) }}</span>
+                    <span class="badge badge-primary badge-pill float-right">{{ humanFileSize(file.size) }}</span>
                 </li>
             </ul>
         </main>
@@ -133,5 +133,8 @@
 
     .list-group-item {
         cursor: pointer;
+        &:hover {
+            background-color: rgba(0,0,0,0.03);
+        }
     }
 </style>

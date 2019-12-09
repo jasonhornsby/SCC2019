@@ -4,6 +4,7 @@ import HomeView from '@/views/home.view.vue';
 import LoginView from '@/views/login.view.vue';
 import RegisterView from '@/views/register.view.vue';
 import FileView from '@/views/file.view.vue';
+import NotFoundView from '@/views/404.view.vue';
 
 Vue.use(VueRouter);
 
@@ -40,6 +41,10 @@ const routes = [
     meta: {
       requiresAuth: false
     }
+  },
+  {
+    path: '**',
+    component: NotFoundView
   }
 ];
 

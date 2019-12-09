@@ -14,7 +14,7 @@ export default class FilesStore extends VuexModule {
 
     get getFile(): any {
         return (id: number) => {
-            return this.files.find(file => file.id === id) || null;
+            return this.files.find(file => file.id === id) || "HIHIS";
         }
     }
 
@@ -45,6 +45,15 @@ export default class FilesStore extends VuexModule {
 
     @Mutation
     addFile(file: IFile) {
-        this.files.push(file);
+        const fileAlreadyExists = !!this.files.find(f => f.id === file.id);
+        if (!fileAlreadyExists) {
+            this.files.push(file);
+        }
     }
+
+    @Action
+    deleteFile(file: IFile) {
+
+    }
+
 }
