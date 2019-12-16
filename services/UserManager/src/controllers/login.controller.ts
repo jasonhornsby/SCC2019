@@ -10,7 +10,7 @@ export class LoginController {
 
     constructor(private db: Connection) { }
 
-    @Post()
+    @Post('')
     public async login(req: Request, res: Response) {
         const userRepo = this.db.getRepository(User);
 

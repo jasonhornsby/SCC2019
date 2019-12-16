@@ -10,6 +10,7 @@ import * as swaggerDocument from '../swagger.json';
 // Controllers
 import { HelloController, LoginController, RegisterController, UserController } from './controllers';
 import { Logger } from '@overnightjs/logger';
+import { User } from './entities/user';
 
 export class UserManagerServer extends Server {
 
@@ -40,8 +41,18 @@ export class UserManagerServer extends Server {
 
     private async setup() {
         // Setup database
-        this.db = await createConnection();
+        this.db = await createConnection({
+                "type": "sqlite",
+                "synchronize": true,
+                "logging": true,
+                "logger": "simple-console",
+                "database": "db/database.sqlite",
+                "entities": [
+                    User
+                ]
+            });
         Logger.Info(`Database connection established: ${ this.db.isConnected}`);
+        Logger.Info(`Loaded entities: ${ this.db.entityMetadatas}`);
 
         // Add controllers
         const loginController = new LoginController(this.db);

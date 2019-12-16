@@ -1,11 +1,12 @@
 import axios, { AxiosResponse } from 'axios';
 import router from '@/router';
 
+const authServiceURL = "http://api.scc2019.local.app.garden/auth";
 
 async function register(username: string, password: string) {
     let response: AxiosResponse;
     try {
-        response = await axios.post('http://localhost:8000/register', { username, password });
+        response = await axios.post(authServiceURL + '/register', { username, password });
     } catch (e) {
         if (e.response.status === 409) {
             throw new Error('Username already exists');
@@ -18,7 +19,7 @@ async function register(username: string, password: string) {
 async function login(username: string, password: string) {
     let response: AxiosResponse;
     try {
-        response = await axios.post('http://localhost:8000/login', { username, password });
+        response = await axios.post(authServiceURL + '/login', { username, password });
     } catch (e) {
         if (e.response.status === 401) {
             throw new Error('Wrong username or password');

@@ -5,7 +5,7 @@ type: container
 services:
   - name: fileservice
     ingresses:
-      - path: /
+      - path: /files
         port: http
         hostname: api.scc2019.local.app.garden
     ports:

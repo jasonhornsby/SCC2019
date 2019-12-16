@@ -32,6 +32,7 @@
     import Component from "vue-class-component";
     import axios from "axios";
     import NoItem from "@/components/noItem.component.vue";
+    import { fileServiceURL } from "@/services/file.service";
 
     @Component({
         name: 'HomeView',
@@ -84,7 +85,7 @@
 
             // Send the request
             axios.post(
-                'http://localhost:5000/files',
+                fileServiceURL,
                 formData,
                 {
                     headers: {

@@ -42,6 +42,7 @@
     import { Component } from 'vue-property-decorator';
     import { IFile } from '@/models/file.model';
     import axios from 'axios';
+    import { fileServiceURL } from "@/services/file.service";
 
     @Component({
         name: 'FileView'
@@ -75,7 +76,7 @@
         downloadFile() {
             this.downloading = true;
             this.downloadPercent = 0;
-            axios.get('http://localhost:5000/files/' + this.id + '/download' ,
+            axios.get(fileServiceURL + '/' + this.id + '/download' ,
                 {
                     responseType: 'blob',
                     onDownloadProgress: this.onDownloadProgress
@@ -91,13 +92,19 @@
                         name: 'Files successfully downloaded',
                         type: 'alert'
                     });
-                })
+                }).catch(e => {
+                    this.downloading = false;
+                    this.$store.commit('newNotification', {
+                        name: 'Failed to download',
+                        type: 'error'
+                    })
+            })
         }
         onDownloadProgress(progress: ProgressEvent) {
             this.downloadPercent = Math.round(progress.loaded / this.file.size * 100);
         }
         deleteFile() {
-            axios.delete('http://localhost:5000/files/' + this.id).then(res => {
+            axios.delete(fileServiceURL + '/' + this.id).then(res => {
                 this.$router.push('/');
                 this.$store.commit('newNotification', {
                     name: 'File successfully deleted',

@@ -10,7 +10,7 @@ export class RegisterController {
 
     constructor(private db: Connection) { }
 
-    @Post()
+    @Post('')
     private async newUser(req: Request, res: Response) {
 
         const userRepo = this.db.getRepository(User);
