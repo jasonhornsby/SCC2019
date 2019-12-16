@@ -5,7 +5,7 @@ import { User } from '../entities/user';
 import { jwtManager } from '../util/jwtManager.util';
 import { hash } from 'bcrypt';
 
-@Controller('register/')
+@Controller('auth/register')
 export class RegisterController {
 
     constructor(private db: Connection) { }

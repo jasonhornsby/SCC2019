@@ -8,7 +8,7 @@ import { Connection, createConnection } from 'typeorm';
 import swaggerUi from 'swagger-ui-express';
 import * as swaggerDocument from '../swagger.json';
 // Controllers
-import { LoginController, RegisterController, UserController } from './controllers';
+import { HelloController, LoginController, RegisterController, UserController } from './controllers';
 import { Logger } from '@overnightjs/logger';
 
 export class UserManagerServer extends Server {
@@ -47,8 +47,10 @@ export class UserManagerServer extends Server {
         const loginController = new LoginController(this.db);
         const registerController = new RegisterController(this.db);
         const userController = new UserController(this.db);
+        const helloController = new HelloController();
 
-        super.addControllers([loginController, registerController, userController]);
+
+        super.addControllers([loginController, registerController, helloController, userController]);
     }
 
 }

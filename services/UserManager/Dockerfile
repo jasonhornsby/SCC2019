@@ -1,4 +1,4 @@
-FROM node:13.0-alpine
+FROM node:alpine
 
 # Add dependencies for the build
 RUN apk add --no-cache --virtual .gyp python make g++
@@ -15,6 +15,7 @@ RUN npm install
 
 ADD . /usr/src/app
 RUN npm run compile
+RUN ls -r ./dist
 
 CMD ["npm", "start"]
 EXPOSE 8000

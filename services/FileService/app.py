@@ -79,7 +79,7 @@ db.create_all()
 
 @app.route('/')
 def hello_world():
-    return "Hello World!"
+    return "Hello World from FileService!"
 
 
 @app.route("/files", methods=["GET"])

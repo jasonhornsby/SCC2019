@@ -5,7 +5,7 @@ type: container
 services:
   - name: usermanager
     ingresses:
-      - path: /user/
+      - path: /auth
         port: http
         hostname: api.scc2019.local.app.garden
     ports:
