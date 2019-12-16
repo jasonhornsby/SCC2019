@@ -1,0 +1,12 @@
+kind: Module
+name: client
+description: Vuejs Client Application
+type: container
+services:
+  - name: vuejs
+    ingresses:
+      - path: /
+        port: http
+    ports:
+      - name: http
+        containerPort: 80

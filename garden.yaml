@@ -1,0 +1,9 @@
+kind: Project
+name: scc2019
+environments:
+  - name: local
+defaultEnvironment:
+  local
+providers:
+  - name: local-kubernetes
+    environments: ["local"]

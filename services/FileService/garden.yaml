@@ -1,0 +1,14 @@
+kind: Module
+name: fileservice
+description: Python file service
+type: container
+services:
+  - name: fileservice
+    ingresses:
+      - path: /
+        port: http
+        hostname: api.scc2019.local.app.garden
+    ports:
+      - name: http
+        containerPort: 5000
+        servicePort: 80

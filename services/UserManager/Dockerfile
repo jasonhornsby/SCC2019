@@ -10,11 +10,11 @@ ENV NODE_ENV development
 WORKDIR /usr/src/app
 
 COPY package.json .
+COPY tsconfig.json .
 RUN npm install
 
 ADD . /usr/src/app
 RUN npm run compile
 
-RUN /bin/sh
-CMD [ 'npm', 'start']
+CMD ["npm", "start"]
 EXPOSE 8000

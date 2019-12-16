@@ -1,0 +1,14 @@
+kind: Module
+name: usermanager
+description: User Manager
+type: container
+services:
+  - name: usermanager
+    ingresses:
+      - path: /user/
+        port: http
+        hostname: api.scc2019.local.app.garden
+    ports:
+      - name: http
+        containerPort: 8000
+        servicePort: 80
