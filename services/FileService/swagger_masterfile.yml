@@ -136,3 +136,57 @@ paths:
           description: Successfully deleted a file from db
         404:
           description: "Not Found: http://.../{id}"
+
+    patch:
+      operationId: change_filename_and_shared
+      tags:
+        - files
+      consumes:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: Id of the file
+          type: integer
+          required: True
+        - name: userid
+          in: header
+          description: user id
+          required: true
+          type: integer
+        - name: file_id
+          in: path
+          type: integer
+          required: True
+        - name: file_info
+          in: body
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              shared_with:
+                  type: array
+                  items:
+                    type: integer
+          required: True
+      responses:
+          200:
+            description: Successfully changed file
+            schema:
+              properties:
+                name:
+                  type: string
+                size:
+                  type: integer
+                upload_date:
+                  type: string
+                id:
+                  type: integer
+                user:
+                  type: string
+          400:
+            description: Missing file object
+          403:
+            description: Unauthorized
+

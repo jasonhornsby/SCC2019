@@ -1,5 +1,7 @@
 import json
 import os
+import string
+import logging
 from datetime import datetime, date
 
 from flask_jwt_extended import jwt_required, get_jwt_identity, JWTManager
@@ -45,10 +47,12 @@ class FileEncoder(json.JSONEncoder):
                 "upload_date": file_info.upload_date,
                 "id": file_info.id,
                 "user": file_info.user,
+                "_shared_with": file_info._shared_with  # todo
             }
         elif isinstance(file_info, (datetime, date)):
             return file_info.isoformat()
         elif isinstance(file_info, FileStorage):
+            #todo
             return "str(file_info)"
         else:
             return super().default(file_info)
@@ -63,6 +67,7 @@ class File1(db.Model):
     size = db.Column(db.Integer)
     upload_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     user = db.Column(db.Integer)
+    _shared_with = db.Column(db.String(256))
     fileobj = db.Column(UploadedFileField)
 
     def __init__(self, name, size, user, fileobj):
@@ -71,6 +76,24 @@ class File1(db.Model):
         self.upload_date = datetime.utcnow()
         self.user = user
         self.fileobj = fileobj
+
+    def set_shared_with(self, shared_list):
+        try:
+            logging.debug(str(shared_list))
+            logging.debug(type(shared_list))
+            self._shared_with = ";".join(str(x) for x in shared_list)
+        except TypeError:
+            logging.error(str(shared_list) + "is not iterable!")
+
+    def get_shared_with(self):
+        value_list = (int(x) for x in self._shared_with.split(";") if
+                      x and not x == "," and not x == "[" and not x == "]")
+        logging.debug(value_list)
+        return value_list
+
+    @property
+    def shared_with(self):
+        return self._shared_with
 
 
 # Create the database tables.
@@ -95,6 +118,17 @@ def get_files():
         in: header
     security:
         - Bearer: []
+    parameters:
+      - name: userid
+        in: header
+        description: user name
+        required: true
+        type: string
+      - name: include
+        in: query
+        description: 'all' for own and shared files, 'own' for only shared, 'shared' for only files from other users
+        required: false
+        type: string
     responses:
         200:
           schema:
@@ -119,8 +153,14 @@ def get_files():
     if not userid:
         return not_authenticated()
     # else: get files from db
-    db_response = File1.query.filter_by(user=userid).all()
-    js = json.dumps(db_response, cls=FileEncoder)
+    file_dict = {}
+    if (not request.args.get('include')) or request.args.get('include') == "all" or request.args.get('include') == "own":
+        db_response = File1.query.filter_by(user=userid).all()
+        file_dict["own_files"] = db_response
+    if request.args.get('incude') == "all" or request.args.get('include') == 'shared':
+        # todo
+        file_dict["shared_files"] = ["unimpl"]
+    js = json.dumps(file_dict, cls=FileEncoder)
     return Response(js, status=200, mimetype='application/json')
 
 
@@ -132,7 +172,10 @@ def generate_secure_and_unique_filename(file):
         return secure_name
     i = 1
     while File1.query.filter_by(name=secure_name).scalar():
-        secure_name = secure_name.split(".")[0] + str(i) + "." + secure_name.split(".")[1]
+        if "." in secure_name:
+            secure_name = secure_name.split(".")[0] + str(i) + "." + secure_name.split(".")[1]
+        else:
+            secure_name = secure_name + str(i)
         i += 1
         if i > 1000:
             raise Exception()
@@ -156,6 +199,14 @@ def add_file():
         description: user name
         required: true
         type: string
+      - name: shared_with
+        in: formData
+        description: array of users this file is accessable to
+        required: false
+        type: array
+        items:
+          type: integer
+        uniqueItems: true
       - name: file_content
         in: formData
         type: file
@@ -179,23 +230,25 @@ def add_file():
      """
     file = request.files["file_content"]
     userid = get_jwt_identity()
+    shared_list = request.form.get("shared_with", [])
+    if isinstance(shared_list, string):
+        shared_list = json.loads(shared_list)
     if not userid:
         return not_authenticated()
     if file:
-        # depot = DepotManager.get()
-        # fileid = depot.create(file)
-        # stored_file = depot.get(fileid)
-        return create_file_obj(file, userid)
+        logging.info("1.: " + str(shared_list) + ": " + str(type(shared_list)))
+        return create_file_obj(file, userid, shared_list)
     else:
         return missing_file()
 
 
-def create_file_obj(file, userid):
+def create_file_obj(file, userid, shared_list=[]):
     file.seek(0, os.SEEK_END)
     file_length = file.tell()
     file.seek(0, os.SEEK_SET)
     secured_filename = generate_secure_and_unique_filename(file)
     file_object = File1(secured_filename, file_length, userid, file)
+    file_object.set_shared_with(shared_list)
     db.session.add(file_object)
     db.session.commit()
     js = json.dumps(file_object, cls=FileEncoder)
@@ -282,13 +335,18 @@ def get_single_file(file_id):
         return not_authenticated()
     file = File1.query.get(file_id)
     if file:
-        if file.user != userid:
+        if not is_allowed_to_access(userid, file):
             return not_authorized()
         js = json.dumps(file, cls=FileEncoder)
         return Response(js, status=200, mimetype='application/json')
     else:
         return not_found()
 
+def is_allowed_to_access(user_id, file_object):
+    unrestricted = (-1 in file_object.get_shared_with())
+    own_file = (file_object.user == user_id)
+    shared_file = (user_id not in file_object.get_shared_with())
+    return unrestricted or own_file or shared_file
 
 @app.route("/files/<file_id>/download", methods=["GET"])
 @jwt_required
@@ -316,7 +374,7 @@ def get_download(file_id):
         return not_authenticated()
     file = File1.query.get(file_id)
     if file:
-        if file.user != userid:
+        if not is_allowed_to_access(userid, file):
             return not_authorized()
     depot = DepotManager.get()
     depot.get(file.fileobj)
@@ -325,25 +383,21 @@ def get_download(file_id):
 
 @app.route("/files/<file_id>", methods=["PATCH"])
 @jwt_required
-def change_filename(file_id):
+def change_filename_and_shared(file_id):
     """
     Replace the name of an existing file.
     ---
-    operationId: change_filename
+    operationId: change_filename_and_shared
     tags:
       - files
     consumes:
-      - schema:
-          type: object
-            properties:
-              name:
-                type: string
+      - application/json
     parameters:
       - name: userid
         in: header
         description: user id
         required: true
-        type: int
+        type: integer
       - name: file_id
         in: path
         type: integer
@@ -352,29 +406,33 @@ def change_filename(file_id):
         in: body
         schema:
           type: object
-            properties:
-              name:
-                type: string
-        required: True
-    responses:
-      200:
-        description: Successfully changed file
-        schema:
           properties:
             name:
               type: string
-            size:
-              type: integer
-            upload_date:
-              type: string
-            id:
-              type: integer
-            user:
-              type: string
-      400:
-        description: Missing file object
-      403:
-        description: Unauthorized
+            shared_with:
+                type: array
+                items:
+                  type: integer
+        required: True
+    responses:
+        200:
+          description: Successfully changed file
+          schema:
+            properties:
+              name:
+                type: string
+              size:
+                type: integer
+              upload_date:
+                type: string
+              id:
+                type: integer
+              user:
+                type: string
+        400:
+          description: Missing file object
+        403:
+          description: Unauthorized
     """
     userid = get_jwt_identity()
     if not userid:
@@ -386,10 +444,19 @@ def change_filename(file_id):
         return not_authorized()
     else:
         file_info = request.json
-        existing_file.name = secure_filename(file_info["name"])
-        existing_fileobj = existing_file.fileobj
-        depot = DepotManager.get()
-        depot.replace(existing_fileobj, existing_fileobj.file, filename=secure_filename(file_info["name"]))
+        # change name
+        if 'name' in file_info:
+            existing_file.name = secure_filename(file_info["name"])
+            existing_fileobj = existing_file.fileobj
+            depot = DepotManager.get()
+            depot.replace(existing_fileobj, existing_fileobj.file, filename=secure_filename(file_info["name"]))
+        # add new shared
+        if 'shared_with' in file_info:
+            shared_list = file_info["shared_with"]
+            if isinstance(shared_list, string):
+                shared_list = json.loads(shared_list)
+            existing_fileobj.set_shared_with(shared_list)
+        # commit
         db.session.commit()
         file_object = File1.query.get(file_id)
         js = json.dumps(file_object, cls=FileEncoder)
