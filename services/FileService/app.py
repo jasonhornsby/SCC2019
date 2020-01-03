@@ -37,6 +37,9 @@ DepotManager.configure('default', {
     'depot.storage_path': './files'
 })
 
+# logging
+logging.basicConfig(filename='logfile.log', level=logging.DEBUG)
+
 
 class FileEncoder(json.JSONEncoder):
     def default(self, file_info):
@@ -47,12 +50,12 @@ class FileEncoder(json.JSONEncoder):
                 "upload_date": file_info.upload_date,
                 "id": file_info.id,
                 "user": file_info.user,
-                "_shared_with": file_info._shared_with  # todo
+                "_shared_with": file_info.shared_with_as_string()  # todo
             }
         elif isinstance(file_info, (datetime, date)):
             return file_info.isoformat()
         elif isinstance(file_info, FileStorage):
-            #todo
+            # todo
             return "str(file_info)"
         else:
             return super().default(file_info)
@@ -67,7 +70,7 @@ class File1(db.Model):
     size = db.Column(db.Integer)
     upload_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     user = db.Column(db.Integer)
-    _shared_with = db.Column(db.String(256))
+    shared_with = db.Column(db.String(256))
     fileobj = db.Column(UploadedFileField)
 
     def __init__(self, name, size, user, fileobj):
@@ -81,19 +84,18 @@ class File1(db.Model):
         try:
             logging.debug(str(shared_list))
             logging.debug(type(shared_list))
-            self._shared_with = ";".join(str(x) for x in shared_list)
+            self.shared_with = ";".join(str(x) for x in shared_list)
         except TypeError:
             logging.error(str(shared_list) + "is not iterable!")
 
     def get_shared_with(self):
-        value_list = (int(x) for x in self._shared_with.split(";") if
+        value_list = (int(x) for x in self.shared_with.split(";") if
                       x and not x == "," and not x == "[" and not x == "]")
         logging.debug(value_list)
         return value_list
 
-    @property
-    def shared_with(self):
-        return self._shared_with
+    def shared_with_as_string(self):
+        return self.shared_with
 
 
 # Create the database tables.
@@ -154,12 +156,14 @@ def get_files():
         return not_authenticated()
     # else: get files from db
     file_dict = {}
-    if (not request.args.get('include')) or request.args.get('include') == "all" or request.args.get('include') == "own":
+    if (not request.args.get('include')) or request.args.get('include') == "all" or request.args.get(
+            'include') == "own":
         db_response = File1.query.filter_by(user=userid).all()
         file_dict["own_files"] = db_response
     if request.args.get('incude') == "all" or request.args.get('include') == 'shared':
         # todo
-        file_dict["shared_files"] = ["unimpl"]
+        db_response2 = File1.query.filter(File1.shared_with.contains(str(userid))).all()
+        file_dict["shared_files"] = db_response2
     js = json.dumps(file_dict, cls=FileEncoder)
     return Response(js, status=200, mimetype='application/json')
 
@@ -231,7 +235,11 @@ def add_file():
     file = request.files["file_content"]
     userid = get_jwt_identity()
     shared_list = request.form.get("shared_with", [])
-    if isinstance(shared_list, string):
+    logging.info("shared_with: ")
+    logging.info(shared_list)
+    logging.info(str(type(shared_list)))
+    if isinstance(shared_list, str):
+        logging.info(shared_list)
         shared_list = json.loads(shared_list)
     if not userid:
         return not_authenticated()
@@ -342,11 +350,13 @@ def get_single_file(file_id):
     else:
         return not_found()
 
+
 def is_allowed_to_access(user_id, file_object):
     unrestricted = (-1 in file_object.get_shared_with())
     own_file = (file_object.user == user_id)
     shared_file = (user_id not in file_object.get_shared_with())
     return unrestricted or own_file or shared_file
+
 
 @app.route("/files/<file_id>/download", methods=["GET"])
 @jwt_required
