@@ -113,13 +113,16 @@ def get_files():
     """
     Get all files.
     ---
+    operationId: get_files
+    tags:
+      - files
     securityDefinitions:
       Bearer:
         type: apiKey
         name: Authorization
         in: header
     security:
-        - Bearer: []
+      - Bearer: []
     parameters:
       - name: userid
         in: header
@@ -128,27 +131,57 @@ def get_files():
         type: string
       - name: include
         in: query
-        description: 'all' for own and shared files, 'own' for only shared, 'shared' for only files from other users
+        description: all for own and shared files, own for only shared, shared for only files from other users
         required: false
         type: string
     responses:
-        200:
-          schema:
-            type: array
-            items:
-              type: object
-              properties:
-                name:
-                  type: string
-                size:
-                  type: integer
-                upload_date:
-                  type: string
-                id:
-                  type: integer
-                user:
-                  type: string
-
+      200:
+        description: dictionary with to lists of fileobject-descriptions
+        schema:
+          type: object
+          properties:
+            own_files:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  size:
+                    type: integer
+                  upload_date:
+                    type: string
+                  id:
+                    type: integer
+                  user:
+                    type: string
+                  shared_with:
+                    type: array
+                    items:
+                      type: integer
+            shared_files:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  size:
+                    type: integer
+                  upload_date:
+                    type: string
+                  id:
+                    type: integer
+                  user:
+                    type: string
+                  shared_with:
+                    type: array
+                    items:
+                      type: integer
+      401:
+        description: Unauthorized
+      403:
+        description: Forbidden- insufficient access rights
     """
     # get userid
     userid = get_jwt_identity()
@@ -192,6 +225,13 @@ def add_file():
     """
     Add a new file
     ---
+    securityDefinitions:
+      Bearer:
+        type: apiKey
+        name: Authorization
+        in: header
+    security:
+      - Bearer: []
     operationId: add_file
     tags:
       - files
@@ -231,7 +271,17 @@ def add_file():
               type: integer
             user:
               type: string
-     """
+            shared_with:
+              type: array
+              items:
+                type: integer
+      400:
+        description: Missing/empty file object
+      401:
+        description: Unauthorized
+      403:
+        description: Forbidden- insufficient access rights
+    """
     file = request.files["file_content"]
     userid = get_jwt_identity()
     shared_list = request.form.get("shared_with", [])
@@ -269,6 +319,16 @@ def delete_file(file_id):
     """
     Delete a File by its id
     ---
+    securityDefinitions:
+      Bearer:
+        type: apiKey
+        name: Authorization
+        in: header
+    security:
+      - Bearer: []
+    operationId: delete_file
+    tags:
+      - files
     parameters:
       - name: file_id
         in: path
@@ -282,8 +342,12 @@ def delete_file(file_id):
     responses:
       200:
         description: Successfully deleted a file from db
+      401:
+        description: Unauthorized
+      403:
+        description: Forbidden- insufficient access rights
       404:
-        description: Not Found
+        description: Not found
     """
     userid = get_jwt_identity()
     if not userid:
@@ -308,8 +372,18 @@ def get_single_file(file_id):
     """
     Get one specific file by its id.
     ---
+    securityDefinitions:
+      Bearer:
+        type: apiKey
+        name: Authorization
+        in: header
+    security:
+      - Bearer: []
+    operationId: get_single_file
+    tags:
+      - files
     parameters:
-      - name: id
+      - name: file_id
         in: path
         description: Id of the file
         type: integer
@@ -329,14 +403,22 @@ def get_single_file(file_id):
             size:
               type: integer
             upload_date:
-              type: "string"
-              format: "date-time"
+              type: string
+              format: date-time
             id:
               type: integer
             user:
               type: string
+            shared_with:
+              type: array
+              items:
+                type: integer
+      401:
+        description: Unauthorized
+      403:
+        description: Forbidden- insufficient access rights
       404:
-          description: Not Found
+        description: Not found
     """
     userid = get_jwt_identity()
     if not userid:
@@ -364,6 +446,16 @@ def get_download(file_id):
     """
     Get the content of one specific file by its id.
     ---
+    securityDefinitions:
+      Bearer:
+        type: apiKey
+        name: Authorization
+        in: header
+    security:
+      - Bearer: []
+    operationId: get_download
+    tags:
+      - files
     parameters:
       - name: id
         in: path
@@ -376,8 +468,12 @@ def get_download(file_id):
         required: true
         type: string
     responses:
+      401:
+        description: Unauthorized
+      403:
+        description: Forbidden- insufficient access rights
       404:
-        description: Not Found
+        description: Not found
     """
     userid = get_jwt_identity()
     if not userid:
@@ -397,6 +493,13 @@ def change_filename_and_shared(file_id):
     """
     Replace the name of an existing file.
     ---
+    securityDefinitions:
+      Bearer:
+        type: apiKey
+        name: Authorization
+        in: header
+    security:
+      - Bearer: []
     operationId: change_filename_and_shared
     tags:
       - files
@@ -420,29 +523,37 @@ def change_filename_and_shared(file_id):
             name:
               type: string
             shared_with:
-                type: array
-                items:
-                  type: integer
+              type: array
+              items:
+                type: integer
         required: True
     responses:
-        200:
-          description: Successfully changed file
-          schema:
-            properties:
-              name:
-                type: string
-              size:
+      200:
+        description: Successfully changed file
+        schema:
+          properties:
+            name:
+              type: string
+            size:
+              type: integer
+            upload_date:
+              type: string
+            id:
+              type: integer
+            user:
+              type: string
+            shared_with:
+              type: array
+              items:
                 type: integer
-              upload_date:
-                type: string
-              id:
-                type: integer
-              user:
-                type: string
-        400:
-          description: Missing file object
-        403:
-          description: Unauthorized
+      400:
+        description: Missing/empty file object
+      401:
+        description: Unauthorized
+      403:
+        description: Forbidden- insufficient access rights
+      404:
+        description: Not found
     """
     userid = get_jwt_identity()
     if not userid:
