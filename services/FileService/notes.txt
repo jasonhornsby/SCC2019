@@ -1,0 +1,20 @@
+user 6:
+
+curl -X PATCH "http://127.0.0.1:5000/files/19" -H  "accept: application/json" -H  "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWQiOjZ9.cWOIKsYI08JWgFIFh9iuhlgKNMQXb_OfD4VfyrRtIRI" -d '{"name": "string",  "shared_with": [234,222]}'
+
+curl -X GET "http://127.0.0.1:5000/files" -H  "accept: application/json" -H  "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWQiOjZ9.cWOIKsYI08JWgFIFh9iuhlgKNMQXb_OfD4VfyrRtIRI"
+
+curl -X POST "http://127.0.0.1:5000/files" -H  "accept: application/json" -H  "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWQiOjZ9.cWOIKsYI08JWgFIFh9iuhlgKNMQXb_OfD4VfyrRtIRI" -H  "Content-Type: multipart/form-data" -F "shared_with= [234,222]" -F "file_content=@test4"
+
+curl -X PATCH "http://127.0.0.1:5000/files/2" -H  "accept: application/json" -H  "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWQiOjZ9.cWOIKsYI08JWgFIFh9iuhlgKNMQXb_OfD4VfyrRtIRI" -d '{"name": "string",  "shared_with": [234,222]}'
+
+ curl -X PATCH "http://127.0.0.1:5000/files/2" -H  "accept: application/json" -H 'Content-Type: application/json' -H  "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWQiOjZ9.cWOIKsYI08JWgFIFh9iuhlgKNMQXb_OfD4VfyrRtIRI" -d '{name: "string",  shared_with: [234,222]}'
+
+
+user 222
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJpZCI6MjIyfQ.x6CA0mN42yWinE7DIm-_tXR2IbXbzD35p5UjQ3R8yrA
+
+user 2
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJpZCI6Mn0.zXsqxxsU_3--uXUjE96m9rm_ctt35AtFmUiSInbNmvc

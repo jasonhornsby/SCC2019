@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  files:
+    build: .
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+    links:
+      - postgres:postgres
+    restart: on-failure
+    environment:
+      - POSTGRES_PASSWORD=testpw
+      - POSTGRES_USER=test
+
+  postgres:
+    restart: always
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=testpw
+      - POSTGRES_PW=testpw
+      - POSTGRES_DB=file_info_db
+      - POSTGRES_HOST=0.0.0.0
+      - POSTGRES_PORT=5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data: {}
+
+
