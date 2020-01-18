@@ -40,7 +40,7 @@ paths:
           type: string
         - name: include
           in: query
-          description: all for own and shared files, own for only shared, shared for only files from other users
+          description: "'all' for own and shared files, 'own' for only shared, 'shared' for only files from other users"
           required: false
           type: string
       responses:

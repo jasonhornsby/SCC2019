@@ -37,10 +37,12 @@ swagger = Swagger(app)
 
 # Depot for actual files
 DepotManager.configure('default', {
-    'depot.storage_path': './files'
+    'depot.backend': 'depot.io.gridfs.GridFSStorage',
+    'depot.mongouri': 'mongodb://user:pass@mongo_db:27017/mongo_db',
 })
 
-# logging
+# logging OSError: Invalid chunk header
+
 logging.basicConfig(filename='logfile.log', level=logging.DEBUG)
 
 
