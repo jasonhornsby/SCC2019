@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { Connection } from 'typeorm';
 import { User } from '../entities/user';
 import { jwtManager } from '../util/jwtManager.util';
-import { hash } from 'bcrypt';
+import { hash } from 'bcryptjs';
 
 @Controller('register')
 export class RegisterController {

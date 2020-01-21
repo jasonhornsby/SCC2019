@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { compare } from 'bcrypt';
+import { compare } from 'bcryptjs';
 
 @Entity()
 export class User extends BaseEntity {
