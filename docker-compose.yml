@@ -5,6 +5,9 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
   client:
     build: ./services/Client
     ports:
@@ -19,3 +22,8 @@ services:
       - "8000:8000"
   postgress:
     image: postgres
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
