@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import router from '@/router';
 
-const authServiceURL = "https://nanyte.design/api/auth";
+const authServiceURL = "/api/auth";
 
 async function register(username: string, password: string) {
     let response: AxiosResponse;
@@ -32,7 +32,7 @@ async function login(username: string, password: string) {
 async function getUsers() {
     let response: AxiosResponse;
     try {
-        response = await axios.get('https://nanyte.design/users');
+        response = await axios.get(authServiceURL + '/users');
     } catch (e) {
         console.error(e);
         return
@@ -51,7 +51,7 @@ function logout() {
 }
 
 async function getAll() {
-    const users = await axios.get('https://nanyte.design/users');
+    const users = await axios.get(authServiceURL + '/users');
     return users.data;
 }
 
