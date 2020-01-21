@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import router from '@/router';
 
-const authServiceURL = "/api/auth";
+const authServiceURL = "https://www.nanyte.design/api/auth";
 
 async function register(username: string, password: string) {
     let response: AxiosResponse;
