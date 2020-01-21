@@ -11,7 +11,7 @@
                 <div class="progress-bar" role="progressbar" v-bind:style="{ width: uploadedPercent + '%' }" aria-valuemin="0" aria-valuemax="100" ref="progress">{{ uploadedPercent }}%</div>
             </div>
 
-            <no-item v-if="files.length === 0" message="No files uploaded"></no-item>
+            <no-item v-if="(files.shared_files.length + files.own_files.length) === 0" message="No files uploaded"></no-item>
 
             <ul class="list-group">
                 <li class="list-group-item"
