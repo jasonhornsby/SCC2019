@@ -1,0 +1,21 @@
+version: '3'
+services:
+  redirector:
+    build: services/Redirector
+    ports:
+      - "80:80"
+      - "443:443"
+  client:
+    build: ./services/Client
+    ports:
+      - "8080:8080"
+  file:
+    build: ./services/FileService
+    ports:
+      - "5000:5000"
+  user:
+    build: ./services/UserManager
+    ports:
+      - "8000:8000"
+  postgress:
+    image: postgres

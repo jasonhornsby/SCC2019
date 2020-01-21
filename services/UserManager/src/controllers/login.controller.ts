@@ -5,7 +5,7 @@ import { User } from '../entities/user';
 import { LoginError } from '../errors/login.error';
 import { jwtManager } from '../util/jwtManager.util';
 
-@Controller('auth/login')
+@Controller('login')
 export class LoginController {
 
     constructor(private db: Connection) { }

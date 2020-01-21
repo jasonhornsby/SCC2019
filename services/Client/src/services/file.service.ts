@@ -1,9 +1,10 @@
 import axios, { AxiosResponse } from 'axios';
 import { IFile } from '@/models/file.model';
+import { IFilesStore } from '@/store/files.store';
 
-export const fileServiceURL = 'http://api.scc2019.local.app.garden/files';
+export const fileServiceURL = 'https://nanyte.design/api/files/files';
 
-async function getFiles(): Promise<IFile[]> {
+async function getFiles(): Promise<IFilesStore> {
     let response: AxiosResponse = await axios.get(fileServiceURL);
 
     return response.data;

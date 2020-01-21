@@ -43,6 +43,7 @@
     import { IFile } from '@/models/file.model';
     import axios from 'axios';
     import { fileServiceURL } from "@/services/file.service";
+    import { IFilesStore } from "@/store/files.store";
 
     @Component({
         name: 'FileView'
@@ -53,7 +54,10 @@
         downloadPercent = 0;
 
         get file() {
-            return this.$store.getters.getFiles.find((file: IFile) => file.id === this.id);
+            let files = this.$store.getters.getFiles as IFilesStore;
+            const ownFile = files.own_files.find(file => file.id === parseInt(this.$route.params.id));
+            const sharedFile = files.shared_files.find(file => file.id === parseInt(this.$route.params.id));
+            return ownFile || sharedFile || {} as any;
         }
 
         mounted() {

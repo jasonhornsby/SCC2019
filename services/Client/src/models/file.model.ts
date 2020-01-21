@@ -4,4 +4,5 @@ export interface IFile {
     size: number;
     upload_date: string;
     user: number;
+    _shared_with: string;
 }

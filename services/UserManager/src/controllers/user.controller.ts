@@ -3,7 +3,7 @@ import { Connection } from 'typeorm';
 import { Request, Response } from 'express';
 import { User } from '../entities/user';
 
-@Controller('auth/users')
+@Controller('users')
 export class UserController {
 
     constructor(private db: Connection) {}

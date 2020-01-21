@@ -2,7 +2,7 @@ import { Controller, Get } from '@overnightjs/core';
 import { Request, Response } from 'express';
 
 
-@Controller('auth/hello')
+@Controller('')
 export class HelloController {
     @Get('')
     hello(req: Request, res: Response) {
