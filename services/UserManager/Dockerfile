@@ -1,7 +1,7 @@
 FROM node:alpine
 
 # Add dependencies for the build
-RUN apk add --no-cache --virtual .gyp python make g++
+RUN apk add curl python --no-cache --virtual build-dependencies build-base gcc
 
 # Env
 ENV NODE_ENV development
