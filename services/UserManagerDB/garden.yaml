@@ -1,0 +1,8 @@
+kind: Module
+name: usermanagerdatabase
+description: User Manager database
+type: container
+image: postgres
+services:
+  - name: postgres
+    image: postgres

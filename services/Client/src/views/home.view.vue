@@ -15,7 +15,7 @@
 
             <ul class="list-group">
                 <li class="list-group-item"
-                    v-for="file in files"
+                    v-for="file in files.own_files"
                     v-bind:key="file.id"
                     @click="goToFile(file.id)"
                 >
