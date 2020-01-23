@@ -35,7 +35,7 @@ paths:
       parameters:
         - name: include
           in: query
-          description: "'all' for own and shared files, 'own' for only files ubloaded by authorized user, 'shared' for only files from other users the autorized user has access to."
+          description: "'all' for own and shared files, 'own' for only files uploaded by authorized user, 'shared' for only files from other users the autorized user has access to."
           required: false
           type: string
       responses:
