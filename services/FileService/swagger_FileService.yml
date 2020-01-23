@@ -1,8 +1,8 @@
 swagger: "2.0"
 info:
-  description: "File Server."
+  description: "File Server"
   version: "1.0.0"
-  title:  "File Server."
+  title:  "File Server"
 basePath: /
 tags:
 - name: "files"
@@ -25,7 +25,7 @@ securityDefinitions:
 paths:
   /files:
     get:
-      summary: Read the entire list of files
+      summary: Reads the entire list of files.
       description: Access to all files
       security:
         - Bearer: []
@@ -33,14 +33,9 @@ paths:
       tags:
         - files
       parameters:
-        - name: userid
-          in: header
-          description: user name
-          required: true
-          type: string
         - name: include
           in: query
-          description: "'all' for own and shared files, 'own' for only shared, 'shared' for only files from other users"
+          description: "'all' for own and shared files, 'own' for only files ubloaded by authorized user, 'shared' for only files from other users the autorized user has access to."
           required: false
           type: string
       responses:
@@ -93,7 +88,7 @@ paths:
           description: Forbidden- insufficient access rights
 
     post:
-      summary: Add a new file
+      summary: Uploads a new file and adds information about which users have the right to download it.
       description: Add a new file
       security:
         - Bearer: []
@@ -103,14 +98,9 @@ paths:
       consumes:
         - multipart/form-data
       parameters:
-        - name: userid
-          in: header
-          description: user name
-          required: true
-          type: string
         - name: shared_with
           in: formData
-          description: array of users this file is accessable to
+          description: array of users that can access this file
           required: false
           type: array
           items:
@@ -119,7 +109,7 @@ paths:
         - name: file_content
           in: formData
           type: file
-          description: File to create
+          description: the file to upload
           required: true
       responses:
         201:
@@ -143,12 +133,12 @@ paths:
         400:
           description: Missing/empty file object
         401:
-          description: Unauthorized
+          description: Unauthorized- not logged in
         403:
           description: Forbidden- insufficient access rights
   /files/{file_id}:
     get:
-      summary: Get a specific file
+      summary: Get all informations about a uploaded file from the database.
       description: Get one specific file by its id
       security:
         - Bearer: []
@@ -161,14 +151,9 @@ paths:
           description: Id of the file
           type: integer
           required: True
-        - name: usertoken
-          in: header
-          description: authentication token of user
-          required: true
-          type: string
       responses:
         200:
-          description: Successfully found and delievered file
+          description: Successfully found and delievered file information
           schema:
             properties:
               name:
@@ -195,8 +180,8 @@ paths:
 
 
     delete:
-      summary: Delete a File
-      description: Delete a File by its id
+      summary: Deletes a file specified by its file_id. Can only be done by the owner.
+      description: Delete a file
       security:
         - Bearer: []
       operationId: delete_file
@@ -207,11 +192,6 @@ paths:
           in: path
           type: integer
           required: True
-        - name: userid
-          in: header
-          description: authentication token of user
-          required: true
-          type: string
       responses:
         200:
           description: Successfully deleted a file from db
@@ -220,11 +200,11 @@ paths:
         403:
           description: Forbidden- insufficient access rights
         404:
-          description: Not found
+          description: Not found- no file with this id in the database
 
     patch:
-      summary: Change a files content or the users it is shared with.
-      description: Upload the new content to an existing file or change which users can access it.
+      summary: Change a files content and/or the users it is shared with.
+      description: Update a file.
       security:
         - Bearer: []
       operationId: change_filename_and_shared
@@ -233,11 +213,6 @@ paths:
       consumes:
         - application/json
       parameters:
-        - name: userid
-          in: header
-          description: user id
-          required: true
-          type: integer
         - name: file_id
           in: path
           type: integer
@@ -297,11 +272,6 @@ paths:
           description: Id of the file
           type: integer
           required: True
-        - name: usertoken
-          in: header
-          description: authentication token of user
-          required: true
-          type: string
       responses:
         401:
           description: Unauthorized
