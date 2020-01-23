@@ -5,10 +5,13 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    depends_on:
+      - file
+      - user
   client:
     build: ./services/Client
     ports:
-      - "8080:8080" 
+      - "8080:8080"
 
   file:
     build: ./services/FileService
