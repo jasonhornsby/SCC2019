@@ -6,4 +6,6 @@ werkzeug
 flask-jwt-extended
 flask-cors==3.0.8
 requests
-
+psycopg2
+flask-migrate
+pymongo

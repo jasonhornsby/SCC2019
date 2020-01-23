@@ -1,25 +1,14 @@
 version: '3'
-services:
-  redirector:
-    build: services/Redirector
-    ports:
-      - "80:80"
-      - "443:443"
-  client:
-    build: ./services/Client
-    ports:
-      - "8080:8080" 
 
-  file:
-    build: ./services/FileService
+services:
+  files:
+    build: .
     ports:
       - "5000:5000"
     depends_on:
       - postgres
-      - mongo_db
     links:
       - postgres:postgres
-      - mongo_db:mongo_db
     restart: on-failure
     environment:
       - POSTGRES_PASSWORD=testpw
@@ -53,17 +42,12 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=user
       - MONGO_INITDB_ROOT_PASSWORD=pass
     volumes:
-    - ./services/FileService/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     - mongo-volume:/data/db
-
-
-  user:
-    build: ./services/UserManager
-    ports:
-      - "8000:8000"
-  postgress:
-    image: postgres
 
 volumes:
   postgres_data: {}
   mongo-volume: {}
+
+
+

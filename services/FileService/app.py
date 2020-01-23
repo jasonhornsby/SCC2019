@@ -5,6 +5,7 @@ import logging
 from datetime import datetime, date
 
 from flask_jwt_extended import jwt_required, get_jwt_identity, JWTManager
+from sqlalchemy.dialects.postgresql import ARRAY
 from werkzeug.utils import secure_filename
 from depot.io.interfaces import FileStorage
 from depot.manager import DepotManager
@@ -18,7 +19,8 @@ from flask_cors import CORS
 app = Flask(__name__)
 app.config['DEBUG'] = True
 CORS(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://test:testpw@postgres:5432/file_info_db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_TOKEN_LOCATION'] = 'headers'
 app.config['JWT_HEADER_NAME'] = 'Authorization'
 app.config['JWT_HEADER_TYPE'] = 'Bearer'
@@ -28,16 +30,19 @@ app.config['JWT_IDENTITY_CLAIM'] = 'id'
 app.config['JWT_SECRET_KEY'] = 'secret'  # Change this!
 jwt = JWTManager(app)
 
+# db
 db = SQLAlchemy(app)
 """Dokumentation & Testanfragen zu finden unter /apidocs/"""
 swagger = Swagger(app)
 
 # Depot for actual files
 DepotManager.configure('default', {
-    'depot.storage_path': './files'
+    'depot.backend': 'depot.io.gridfs.GridFSStorage',
+    'depot.mongouri': 'mongodb://user:pass@mongo_db:27017/mongo_db',
 })
 
-# logging
+# logging OSError: Invalid chunk header
+
 logging.basicConfig(filename='logfile.log', level=logging.DEBUG)
 
 
@@ -50,7 +55,7 @@ class FileEncoder(json.JSONEncoder):
                 "upload_date": file_info.upload_date,
                 "id": file_info.id,
                 "user": file_info.user,
-                "_shared_with": file_info.shared_with_as_string()  # todo
+                "shared_with": file_info.shared_with_as_string()
             }
         elif isinstance(file_info, (datetime, date)):
             return file_info.isoformat()
@@ -62,15 +67,12 @@ class FileEncoder(json.JSONEncoder):
 
 
 class File1(db.Model):
-    # todo list user freigeschaltet, für alle id (-1)
-    # todo put für dateiname and freigaben
-    # todo get für freigegebene Dateien mit query string parameter von get eigene zu unterscheiden
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128))
     size = db.Column(db.Integer)
     upload_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     user = db.Column(db.Integer)
-    shared_with = db.Column(db.String(256))
+    shared_with = db.Column(ARRAY(db.Integer, dimensions=1))
     fileobj = db.Column(UploadedFileField)
 
     def __init__(self, name, size, user, fileobj):
@@ -84,18 +86,19 @@ class File1(db.Model):
         try:
             logging.debug(str(shared_list))
             logging.debug(type(shared_list))
-            self.shared_with = ";".join(str(x) for x in shared_list)
+            self.shared_with=shared_list
         except TypeError:
             logging.error(str(shared_list) + "is not iterable!")
 
     def get_shared_with(self):
-        value_list = (int(x) for x in self.shared_with.split(";") if
-                      x and not x == "," and not x == "[" and not x == "]")
+        value_list = self.shared_with
         logging.debug(value_list)
         return value_list
 
     def shared_with_as_string(self):
-        return self.shared_with
+        value_list = self.shared_with
+        print(str(value_list))
+        return ",".join(str(x) for x in value_list)
 
 
 # Create the database tables.
@@ -131,7 +134,7 @@ def get_files():
         type: string
       - name: include
         in: query
-        description: all for own and shared files, own for only shared, shared for only files from other users
+        description: "'all' for own and shared files, 'own' for only shared, 'shared' for only files from other users"
         required: false
         type: string
     responses:
@@ -193,10 +196,10 @@ def get_files():
             'include') == "own":
         db_response = File1.query.filter_by(user=userid).all()
         file_dict["own_files"] = db_response
-    if request.args.get('incude') == "all" or request.args.get('include') == 'shared':
-        # todo
-        db_response2 = File1.query.filter(File1.shared_with.contains(str(userid))).all()
-        file_dict["shared_files"] = db_response2
+    if request.args.get('include') == "all" or request.args.get('include') == 'shared':
+        db_response_shared = File1.query.filter(File1.shared_with.contains([userid])).all()
+        db_response_public = File1.query.filter(File1.shared_with.contains([-1])).all()
+        file_dict["shared_files"] = list(set(db_response_shared + db_response_public))
     js = json.dumps(file_dict, cls=FileEncoder)
     return Response(js, status=200, mimetype='application/json')
 
@@ -436,7 +439,7 @@ def get_single_file(file_id):
 def is_allowed_to_access(user_id, file_object):
     unrestricted = (-1 in file_object.get_shared_with())
     own_file = (file_object.user == user_id)
-    shared_file = (user_id not in file_object.get_shared_with())
+    shared_file = (user_id in file_object.get_shared_with())
     return unrestricted or own_file or shared_file
 
 
@@ -565,18 +568,22 @@ def change_filename_and_shared(file_id):
         return not_authorized()
     else:
         file_info = request.json
+        print("changeparams.: " + str(file_info) + ": " + str(type(file_info)))
+        if isinstance(file_info, str):
+            logging.info(file_info)
+            file_info = json.loads(file_info)
         # change name
         if 'name' in file_info:
             existing_file.name = secure_filename(file_info["name"])
-            existing_fileobj = existing_file.fileobj
+            existing_file_content = existing_file.fileobj
             depot = DepotManager.get()
-            depot.replace(existing_fileobj, existing_fileobj.file, filename=secure_filename(file_info["name"]))
+            depot.replace(existing_file_content, existing_file_content.file, filename=secure_filename(file_info["name"]))
         # add new shared
         if 'shared_with' in file_info:
             shared_list = file_info["shared_with"]
-            if isinstance(shared_list, string):
+            if isinstance(shared_list, str):
                 shared_list = json.loads(shared_list)
-            existing_fileobj.set_shared_with(shared_list)
+            existing_file.set_shared_with(shared_list)
         # commit
         db.session.commit()
         file_object = File1.query.get(file_id)
