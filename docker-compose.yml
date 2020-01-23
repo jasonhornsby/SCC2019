@@ -8,14 +8,62 @@ services:
   client:
     build: ./services/Client
     ports:
-      - "8080:8080"
+      - "8080:8080" 
+
   file:
     build: ./services/FileService
     ports:
       - "5000:5000"
+    depends_on:
+      - postgres
+      - mongo_db
+    links:
+      - postgres:postgres
+      - mongo_db:mongo_db
+    restart: on-failure
+    environment:
+      - POSTGRES_PASSWORD=testpw
+      - POSTGRES_USER=test
+
+  postgres:
+    restart: always
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=testpw
+      - POSTGRES_PW=testpw
+      - POSTGRES_DB=file_info_db
+      - POSTGRES_HOST=0.0.0.0
+      - POSTGRES_PORT=5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  mongo_db:
+    restart: always
+    image: mongo:latest
+    container_name: mongo_db
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=mongo_db
+      - MONGODB_USER=user
+      - MONGODB_PASS=pass
+      - MONGO_INITDB_ROOT_USERNAME=user
+      - MONGO_INITDB_ROOT_PASSWORD=pass
+    volumes:
+    - ./services/FileService/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    - mongo-volume:/data/db
+
+
   user:
     build: ./services/UserManager
     ports:
       - "8000:8000"
   postgress:
     image: postgres
+
+volumes:
+  postgres_data: {}
+  mongo-volume: {}
