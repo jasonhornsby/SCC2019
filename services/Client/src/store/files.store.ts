@@ -64,10 +64,10 @@ export default class FilesStore extends VuexModule {
 
     @Mutation
     addFile(file: IFile) {
-        const ownFile = this.files.own_files.find(file => file.id === file.id);
-        const sharedFile = this.files.shared_files.find(file => file.id === file.id);
+        const ownFile = this.files.own_files.find(sFile => sFile.id === file.id);
+        const sharedFile = this.files.shared_files.find(sFile => sFile.id === file.id);
         if (!ownFile || !sharedFile) {
-            if (file._shared_with == "") {
+            if (file._shared_with == "" || !file._shared_with) {
                 this.files.own_files.push(file);
             } else {
                 this.files.shared_files.push(file);
