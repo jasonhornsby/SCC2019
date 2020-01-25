@@ -153,7 +153,7 @@ paths:
           required: True
       responses:
         200:
-          description: Successfully found and delievered file information
+          description: Successfully found and delivered file information
           schema:
             properties:
               name:

@@ -1,0 +1,122 @@
+swagger: "2.0"
+info:
+  description: "User Management"
+  version: "1.0.0"
+  title:  "User Management"
+basePath: "/auth"
+tags:
+- name: "user"
+  description: "All functionalities about user registration and authentication."
+schemes:
+- "https"
+- "http"
+consumes:
+  - application/json
+produces:
+  - application/json
+
+
+# Paths supported by the server application
+paths:
+  /users:
+    get:
+      summary: Gets a list of all users.
+      description: Get all users
+      operationId: getListOfUsers
+      tags:
+        - user
+      responses:
+        200:
+          description: dictionary with to lists of fileobject-descriptions
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/UserInfo'
+
+  /users/{id}:
+    get:
+      summary: Gets information about one user.
+      description: Information of one user
+      operationId: getUserById
+      tags:
+        - user
+      parameters:
+        - name: id
+          in: path
+          description: id of user
+          required: true
+          type: string
+      responses:
+        200:
+          description: dictionary with to lists of fileobject-descriptions
+          schema:
+            $ref: '#/components/schemas/UserInfo'
+
+
+  /register:
+    post:
+      summary: Adds a new user with a given username and password. Return the JWT-Authentication token.
+      description: Register new user
+      operationId: newUser
+      tags:
+        - user
+      parameters:
+        - in: body
+          name: user
+          description: username and password of new user
+          required: true
+          schema:
+            $ref: '#/components/schemas/UserCredentials'
+      responses:
+        201:
+          description: newly registered user
+          schema:
+            $ref: '#/components/schemas/UserInfoWithToken'
+
+  /login:
+    post:
+      summary: Return JWT token of the user with the given username if password is correct.
+      description: Log in user
+      operationId: login
+      tags:
+        - user
+      parameters:
+        - in: body
+          name: user
+          description: username and password of user
+          required: true
+          schema:
+            $ref: '#/components/schemas/UserCredentials'
+      responses:
+        200:
+          description: token and information for logged in user
+          schema:
+            $ref: '#/components/schemas/UserInfoWithToken'
+        401:
+          description: Unauthorized- Wrong password
+
+components:
+  schemas:
+    UserCredentials:
+      type: object
+      properties:
+        password:
+          type: string
+        username:
+          type: string
+    UserInfoWithToken:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        token:
+          type: string
+    UserInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
