@@ -63,6 +63,7 @@ paths:
                       type: array
                       items:
                         type: integer
+
               shared_files:
                 type: array
                 items:

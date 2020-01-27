@@ -15,7 +15,6 @@ consumes:
 produces:
   - application/json
 
-
 # Paths supported by the server application
 paths:
   /users:
@@ -31,7 +30,15 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/UserInfo'
+              type: object
+              properties:
+                id:
+                  type: integer
+                username:
+                  type: string
+              required:
+                - id
+                - username
 
   /users/{id}:
     get:
@@ -50,7 +57,15 @@ paths:
         200:
           description: dictionary with to lists of fileobject-descriptions
           schema:
-            $ref: '#/components/schemas/UserInfo'
+            type: object
+            properties:
+              id:
+                type: integer
+              username:
+                type: string
+            required:
+              - id
+              - username
 
 
   /register:
@@ -66,12 +81,31 @@ paths:
           description: username and password of new user
           required: true
           schema:
-            $ref: '#/components/schemas/UserCredentials'
+            type: object
+            properties:
+              password:
+                type: string
+              username:
+                type: string
+            required:
+              - password
+              - username
       responses:
         201:
           description: newly registered user
           schema:
-            $ref: '#/components/schemas/UserInfoWithToken'
+            type: object
+            properties:
+              id:
+                type: integer
+              username:
+                type: string
+              token:
+                type: string
+            required:
+              - id
+              - username
+              - token
 
   /login:
     post:
@@ -86,37 +120,30 @@ paths:
           description: username and password of user
           required: true
           schema:
-            $ref: '#/components/schemas/UserCredentials'
+            type: object
+            properties:
+              password:
+                type: string
+              username:
+                type: string
+            required:
+              - password
+              - username
       responses:
         200:
           description: token and information for logged in user
           schema:
-            $ref: '#/components/schemas/UserInfoWithToken'
+            type: object
+            properties:
+              id:
+                type: integer
+              username:
+                type: string
+              token:
+                type: string
+            required:
+              - id
+              - username
+              - token
         401:
           description: Unauthorized- Wrong password
-
-components:
-  schemas:
-    UserCredentials:
-      type: object
-      properties:
-        password:
-          type: string
-        username:
-          type: string
-    UserInfoWithToken:
-      type: object
-      properties:
-        id:
-          type: integer
-        username:
-          type: string
-        token:
-          type: string
-    UserInfo:
-      type: object
-      properties:
-        id:
-          type: integer
-        username:
-          type: string
