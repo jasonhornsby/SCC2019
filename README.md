@@ -3,23 +3,13 @@
 ## List of services
 ### UserManager
 *A simple User Manager that supports Login, Register, and basic User management tasks written in Typescript*
+### Client
+*A vuejs web client to access the features of the app*
+### FileService
+*A python Server handling all file related requests*
+### Redirector
+*A nginx Server that redirects incoming requests to the correct service*
 
-#### Setup
-**For development:**
-Requires nodejs and npm: https://nodejs.org/en/
-1. `npm install`
-2. `npm run dev`
 
-**For production:**
-
-Build container !TODO
-
-#### Used Libraries:
-* "@overnightjs/core": "^1.6.9",
-* "@overnightjs/jwt": "^1.1.14",
-* "@overnightjs/logger": "^1.1.9",
-* "bcrypt": "^3.0.6",
-* "body-parser": "^1.19.0",
-* "express": "^4.17.1",
-* "sqlite3": "^4.1.0",
-* "typeorm": "^0.2.20"
+## Run full application 
+Run the docker-compose.yml file to start all services and containers. If started on a local machine you need to edit *services/Redirector/nginx.conf* to use the localhost domain name and add the correct https certificates.
